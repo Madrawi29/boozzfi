@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>B00ZZ FI Dashboard</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary navigation">
+        <a class="brand" href="#overview" aria-label="B00ZZ FI overview">
+          <span class="flame-mark" aria-hidden="true"><span></span></span>
+          <span>
+            <strong>B00ZZ FI</strong>
+            <small>Arc Testnet</small>
+          </span>
+        </a>
+
+        <nav class="nav-list">
+          <a class="active" href="#overview">Overview</a>
+          <a href="#bridge">Bridge</a>
+          <a href="#swap">Swap</a>
+          <a href="#send">Send</a>
+          <a href="#receive">Receive</a>
+          <a href="#create-token">Create Token</a>
+          <a href="#liquidity">Liquidity</a>
+          <a href="#staking">Staking</a>
+          <a href="#vault">Vault</a>
+          <a href="#creator">Creator Dashboard</a>
+          <a href="#workflows">Workflows</a>
+          <a href="#activity">Activity</a>
+          <a href="#analytics">Analytics</a>
+          <a href="#risk">Risk</a>
+          <a href="#settings">Settings</a>
+        </nav>
+
+        <section class="sidebar-card">
+          <span class="status-dot"></span>
+          <div>
+            <strong>RPC healthy</strong>
+            <small>142 ms latency</small>
+          </div>
+        </section>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Blue flame DeFi suite</p>
+            <h1>Portfolio command center</h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="icon-button" type="button" aria-label="Refresh dashboard" data-refresh>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20 12a8 8 0 0 1-14.4 4.8M4 12A8 8 0 0 1 18.4 7.2M18 3v4h-4M6 21v-4h4" />
+              </svg>
+            </button>
+            <button class="network-pill" type="button">
+              <span class="status-dot"></span>
+              Arc Testnet
+            </button>
+            <button class="wallet-button" type="button">0x71C4...9F02</button>
+          </div>
+        </header>
+
+        <section class="testnet-banner">
+          <div>
+            <strong>Testnet mode active</strong>
+            <span>Tokens have no economic value. Every transaction preview should confirm network, fee, recipient, and finality before signing.</span>
+          </div>
+          <button type="button">Open Faucet</button>
+        </section>
+
+        <section class="quick-actions" aria-label="Quick actions">
+          <button type="button" data-enable-feature="bridge_usdc">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+            Bridge
+          </button>
+          <button type="button" data-enable-feature="swap">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10l-3-3M17 17H7l3 3M17 7 7 17" /></svg>
+            Swap
+          </button>
+          <button type="button" data-enable-feature="send">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 14-7-4 14-3-6-7-1Z" /></svg>
+            Send
+          </button>
+          <button type="button" data-enable-feature="unified_balance">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M7 8l5-5 5 5M5 21h14" /></svg>
+            Receive
+          </button>
+          <button type="button" data-enable-feature="create_token">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 7v10l8 4 8-4V7l-8-4ZM4 7l8 4 8-4M12 11v10" /></svg>
+            Create Token
+          </button>
+        </section>
+
+        <section class="metrics-grid" aria-label="Portfolio metrics">
+          <article class="metric-card hero-card">
+            <div class="card-heading">
+              <span>Total portfolio value</span>
+              <small>Auto refresh: 22s</small>
+            </div>
+            <div class="hero-value">$128,460.72</div>
+            <div class="metric-row">
+              <span class="up">+12.8% simulated yield</span>
+              <span>5 chains tracked</span>
+            </div>
+            <div class="liquidity-wave" aria-hidden="true"></div>
+          </article>
+
+          <article class="metric-card">
+            <div class="card-heading">
+              <span>Available liquidity</span>
+              <small>Arc pools</small>
+            </div>
+            <strong>$52,184.20</strong>
+            <div class="progress-line"><span style="width: 68%"></span></div>
+            <p>Custom Token/USDC depth is healthy for current routing.</p>
+          </article>
+
+          <article class="metric-card">
+            <div class="card-heading">
+              <span>Pending transactions</span>
+              <small>Live tracker</small>
+            </div>
+            <strong>3</strong>
+            <div class="pending-chip"><span></span> Bridge relay pending</div>
+            <p>Next status poll in 8 seconds.</p>
+          </article>
+
+          <article class="metric-card">
+            <div class="card-heading">
+              <span>Fee tracker</span>
+              <small>Arc gas</small>
+            </div>
+            <strong>$0.018</strong>
+            <div class="metric-row">
+              <span>Finality 1.4s</span>
+              <span class="up">Stable</span>
+            </div>
+            <p>Fees are estimated from recent testnet blocks.</p>
+          </article>
+        </section>
+
+        <section class="content-grid">
+          <article class="panel portfolio-panel">
+            <div class="section-title">
+              <div>
+                <p class="eyebrow">Portfolio</p>
+                <h2>Assets by token</h2>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" checked />
+                <span>Hide dust</span>
+              </label>
+            </div>
+
+            <div class="asset-list">
+              <div class="asset-row">
+                <span class="token-badge usdc">US</span>
+                <div>
+                  <strong>USDC</strong>
+                  <small>Arc native stablecoin</small>
+                </div>
+                <span>48,250.00</span>
+                <b>$48,250.00</b>
+              </div>
+              <div class="asset-row">
+                <span class="token-badge arc">AR</span>
+                <div>
+                  <strong>ARC</strong>
+                  <small>Gas and routing token</small>
+                </div>
+                <span>18,420.50</span>
+                <b>$31,315.00</b>
+              </div>
+              <div class="asset-row">
+                <span class="token-badge custom">BZ</span>
+                <div>
+                  <strong>BZPAY</strong>
+                  <small>Created by you</small>
+                </div>
+                <span>92,000.00</span>
+                <b>$27,600.00</b>
+              </div>
+              <div class="asset-row">
+                <span class="token-badge lp">LP</span>
+                <div>
+                  <strong>BZPAY/USDC LP</strong>
+                  <small>Liquidity position</small>
+                </div>
+                <span>1,108.45</span>
+                <b>$15,742.72</b>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel allocation-panel">
+            <div class="section-title">
+              <div>
+                <p class="eyebrow">Allocation</p>
+                <h2>Chain distribution</h2>
+              </div>
+              <button class="ghost-button" type="button" data-export-csv>Export CSV</button>
+            </div>
+            <div class="donut" aria-label="Allocation chart">
+              <span>$128K</span>
+            </div>
+            <div class="legend">
+              <span><i class="swatch arc-swatch"></i>Arc 62%</span>
+              <span><i class="swatch eth-swatch"></i>Ethereum 18%</span>
+              <span><i class="swatch base-swatch"></i>Base 13%</span>
+              <span><i class="swatch op-swatch"></i>Optimism 7%</span>
+            </div>
+          </article>
+
+          <article class="panel workflow-panel">
+            <div class="section-title">
+              <div>
+                <p class="eyebrow">Workflow</p>
+                <h2>Bridge + send progress</h2>
+              </div>
+              <span class="pill warning">Manual steps</span>
+            </div>
+            <ol class="timeline">
+              <li class="done">
+                <span></span>
+                <div>
+                  <strong>Bridge USDC to Arc</strong>
+                  <small>Source confirmed on Sepolia</small>
+                </div>
+              </li>
+              <li class="active">
+                <span></span>
+                <div>
+                  <strong>Relay attestation</strong>
+                  <small>Waiting for bridge provider</small>
+                </div>
+              </li>
+              <li>
+                <span></span>
+                <div>
+                  <strong>Send to treasury wallet</strong>
+                  <small>Ready after bridge completion</small>
+                </div>
+              </li>
+            </ol>
+          </article>
+
+          <article class="panel status-panel">
+            <div class="section-title">
+              <div>
+                <p class="eyebrow">Liquidity</p>
+                <h2>Pool health</h2>
+              </div>
+              <span class="pill success">Healthy</span>
+            </div>
+            <div class="pool-stat">
+              <span>BZPAY/USDC reserve</span>
+              <strong>$36,880</strong>
+            </div>
+            <div class="pool-stat">
+              <span>Pool share</span>
+              <strong>24.7%</strong>
+            </div>
+            <div class="pool-stat">
+              <span>Price impact guard</span>
+              <strong class="warning-text">2.1%</strong>
+            </div>
+          </article>
+
+          <article class="panel positions-panel">
+            <div class="section-title">
+              <div>
+                <p class="eyebrow">Positions</p>
+                <h2>Staking and vault</h2>
+              </div>
+              <button class="ghost-button" type="button">Claim</button>
+            </div>
+            <div class="position-cards">
+              <div>
+                <small>Staked LP</small>
+                <strong>$8,920.00</strong>
+                <span>APR estimate 18.4%</span>
+              </div>
+              <div>
+                <small>Vault share</small>
+                <strong>7,412.18 vUSDC</strong>
+                <span>Yield simulated</span>
+              </div>
+              <div>
+                <small>Rewards</small>
+                <strong>284.70 BZPAY</strong>
+                <span>Unlocks in 3d 08h</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel risk-panel">
+            <div class="section-title">
+              <div>
+                <p class="eyebrow">Risk</p>
+                <h2>Security panel</h2>
+              </div>
+              <span class="pill danger">2 warnings</span>
+            </div>
+            <ul class="risk-list">
+              <li>
+                <span class="risk-dot amber"></span>
+                BZPAY is a custom testnet token. Contract verification pending.
+              </li>
+              <li>
+                <span class="risk-dot red"></span>
+                High allowance detected for router 0x93A2...01D4.
+              </li>
+              <li>
+                <span class="risk-dot green"></span>
+                Wallet is connected to the expected Arc Testnet chain ID.
+              </li>
+            </ul>
+          </article>
+
+          <article class="panel integration-panel">
+            <div class="section-title">
+              <div>
+                <p class="eyebrow">Arc Integration</p>
+                <h2>Feature enablement</h2>
+              </div>
+              <span class="pill success" data-arc-chain-id>Chain 5042002</span>
+            </div>
+            <div class="integration-grid">
+              <div>
+                <small>App Kit</small>
+                <strong data-appkit-status>Loading</strong>
+                <span>send, swap, bridge, unified balance</span>
+              </div>
+              <div>
+                <small>Managed wallet</small>
+                <strong data-managed-status>Loading</strong>
+                <span>server-only Circle boundary</span>
+              </div>
+              <div>
+                <small>Unified balance</small>
+                <strong data-unified-status>Loading</strong>
+                <span>USDC wallet, Gateway, LP, vault</span>
+              </div>
+            </div>
+            <div class="feature-list" data-feature-list></div>
+          </article>
+        </section>
+
+        <section class="panel table-panel" id="activity">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Activity</p>
+              <h2>Recent transactions</h2>
+            </div>
+            <div class="table-actions">
+              <button class="ghost-button" type="button">Filter</button>
+              <button class="ghost-button" type="button">Explorer</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Asset</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Fee</th>
+                  <th>Hash</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Bridge</td>
+                  <td>USDC Sepolia to Arc</td>
+                  <td>12,500.00</td>
+                  <td><span class="pill pulse">Pending</span></td>
+                  <td>$1.42</td>
+                  <td>0x9d12...a8c1</td>
+                </tr>
+                <tr>
+                  <td>Swap</td>
+                  <td>USDC to BZPAY</td>
+                  <td>4,000.00</td>
+                  <td><span class="pill success">Success</span></td>
+                  <td>$0.02</td>
+                  <td>0x3ef0...19bd</td>
+                </tr>
+                <tr>
+                  <td>Stake</td>
+                  <td>BZPAY/USDC LP</td>
+                  <td>320.45</td>
+                  <td><span class="pill success">Success</span></td>
+                  <td>$0.01</td>
+                  <td>0x44bc...902f</td>
+                </tr>
+                <tr>
+                  <td>Send</td>
+                  <td>USDC</td>
+                  <td>875.00</td>
+                  <td><span class="pill danger">Failed</span></td>
+                  <td>$0.00</td>
+                  <td>Wallet rejected</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

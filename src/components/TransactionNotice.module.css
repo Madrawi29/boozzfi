@@ -1,0 +1,55 @@
+.minimumNotice {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 14px;
+  padding: 9px 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  color: #0d3fbd;
+  background: #eff6ff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.processing {
+  width: 100%;
+  max-width: 100%;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: 16px;
+  padding: 10px 13px;
+  border: 1px solid rgba(15, 79, 230, 0.18);
+  border-radius: 8px;
+  color: #082c91;
+  background: #f1f6ff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.blueFlame {
+  width: 22px;
+  height: 28px;
+  flex: 0 0 auto;
+  border-radius: 58% 42% 54% 46%;
+  background: linear-gradient(180deg, #7dd3fc 0%, #1769ff 58%, #082c91 100%);
+  box-shadow:
+    0 0 0 6px rgba(23, 105, 255, 0.1),
+    inset 6px -5px 9px rgba(255, 255, 255, 0.38);
+  transform: rotate(10deg);
+  animation: blueFlamePulse 900ms ease-in-out infinite alternate;
+}
+
+@keyframes blueFlamePulse {
+  from {
+    opacity: 0.72;
+    transform: rotate(10deg) scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: rotate(10deg) scale(1.06);
+  }
+}

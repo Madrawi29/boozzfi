@@ -1,0 +1,229 @@
+{
+  "wallet": {
+    "id": "wallet_demo_001",
+    "address": "0x71C4B7D84EfB9D8E79E5832D1Cd7b7A42C9F02",
+    "label": "Treasury Ops",
+    "lastConnectedAt": "2026-04-29T00:58:12.000Z"
+  },
+  "network": {
+    "id": "arc-testnet",
+    "name": "Arc Testnet",
+    "chainId": 424242,
+    "rpcLatencyMs": 142,
+    "status": "healthy",
+    "isTestnet": true,
+    "explorerUrl": "https://explorer.testnet.arc.example"
+  },
+  "portfolio": {
+    "totalValueUsd": 128460.72,
+    "simulatedYieldPercent": 12.8,
+    "trackedChains": 5,
+    "availableLiquidityUsd": 52184.2,
+    "liquidityDepthPercent": 68,
+    "pendingTransactions": 3,
+    "pendingStatus": "Bridge relay pending",
+    "statusPollSeconds": 8,
+    "gasFeeUsd": 0.018,
+    "finalitySeconds": 1.4,
+    "gasTrend": "Stable"
+  },
+  "tokens": [
+    {
+      "id": "token_usdc_arc",
+      "chainId": 424242,
+      "symbol": "USDC",
+      "name": "USD Coin",
+      "contractAddress": "0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "decimals": 6,
+      "balance": 48250,
+      "priceUsd": 1,
+      "valueUsd": 48250,
+      "label": "Arc native stablecoin",
+      "badge": "US",
+      "riskLevel": "low",
+      "kind": "usdc"
+    },
+    {
+      "id": "token_arc",
+      "chainId": 424242,
+      "symbol": "ARC",
+      "name": "Arc Testnet Gas",
+      "contractAddress": "native",
+      "decimals": 18,
+      "balance": 18420.5,
+      "priceUsd": 1.7,
+      "valueUsd": 31315,
+      "label": "Gas and routing token",
+      "badge": "AR",
+      "riskLevel": "medium",
+      "kind": "arc"
+    },
+    {
+      "id": "token_bzpay",
+      "chainId": 424242,
+      "symbol": "BZPAY",
+      "name": "B00ZZ Pay",
+      "contractAddress": "0x6B00zz0000000000000000000000000000BzPay",
+      "decimals": 18,
+      "balance": 92000,
+      "priceUsd": 0.3,
+      "valueUsd": 27600,
+      "label": "Created by you",
+      "badge": "BZ",
+      "riskLevel": "custom",
+      "kind": "custom"
+    },
+    {
+      "id": "lp_bzpay_usdc",
+      "chainId": 424242,
+      "symbol": "BZPAY/USDC LP",
+      "name": "BZPAY USDC Liquidity Position",
+      "contractAddress": "0x00000000000000000000000000000000B00zzLp",
+      "decimals": 18,
+      "balance": 1108.45,
+      "priceUsd": 14.2,
+      "valueUsd": 15742.72,
+      "label": "Liquidity position",
+      "badge": "LP",
+      "riskLevel": "medium",
+      "kind": "lp"
+    }
+  ],
+  "chainDistribution": [
+    { "chain": "Arc", "percent": 62, "valueUsd": 79645.65 },
+    { "chain": "Ethereum", "percent": 18, "valueUsd": 23122.93 },
+    { "chain": "Base", "percent": 13, "valueUsd": 16700.89 },
+    { "chain": "Optimism", "percent": 7, "valueUsd": 8991.25 }
+  ],
+  "workflow": {
+    "id": "workflow_bridge_send_001",
+    "name": "Bridge + send progress",
+    "templateType": "bridge_send",
+    "status": "pending",
+    "mode": "Manual steps",
+    "steps": [
+      {
+        "order": 1,
+        "stepType": "bridge",
+        "title": "Bridge USDC to Arc",
+        "status": "completed",
+        "detail": "Source confirmed on Sepolia",
+        "txHash": "0x9d12c4a11d4c6e00e8f1e1a0db98a8c1"
+      },
+      {
+        "order": 2,
+        "stepType": "relay",
+        "title": "Relay attestation",
+        "status": "pending",
+        "detail": "Waiting for bridge provider",
+        "txHash": null
+      },
+      {
+        "order": 3,
+        "stepType": "send",
+        "title": "Send to treasury wallet",
+        "status": "not_started",
+        "detail": "Ready after bridge completion",
+        "txHash": null
+      }
+    ]
+  },
+  "liquidityPool": {
+    "id": "pool_bzpay_usdc",
+    "pair": "BZPAY/USDC",
+    "status": "Healthy",
+    "reserveUsd": 36880,
+    "poolSharePercent": 24.7,
+    "priceImpactGuardPercent": 2.1,
+    "volume24hUsd": 18420.45,
+    "lpTokenAddress": "0x00000000000000000000000000000000B00zzLp"
+  },
+  "positions": {
+    "staking": {
+      "label": "Staked LP",
+      "value": "$8,920.00",
+      "detail": "APR estimate 18.4%"
+    },
+    "vault": {
+      "label": "Vault share",
+      "value": "7,412.18 vUSDC",
+      "detail": "Yield simulated"
+    },
+    "rewards": {
+      "label": "Rewards",
+      "value": "284.70 BZPAY",
+      "detail": "Unlocks in 3d 08h"
+    }
+  },
+  "risk": {
+    "warningCount": 2,
+    "items": [
+      {
+        "level": "warning",
+        "message": "BZPAY is a custom testnet token. Contract verification pending."
+      },
+      {
+        "level": "danger",
+        "message": "High allowance detected for router 0x93A2...01D4."
+      },
+      {
+        "level": "success",
+        "message": "Wallet is connected to the expected Arc Testnet chain ID."
+      }
+    ]
+  },
+  "activities": [
+    {
+      "id": "tx_bridge_001",
+      "walletAddress": "0x71C4B7D84EfB9D8E79E5832D1Cd7b7A42C9F02",
+      "type": "Bridge",
+      "asset": "USDC Sepolia to Arc",
+      "amount": 12500,
+      "status": "Pending",
+      "feeUsd": 1.42,
+      "txHash": "0x9d12c4a11d4c6e00e8f1e1a0db98a8c1",
+      "createdAt": "2026-04-29T00:51:24.000Z"
+    },
+    {
+      "id": "tx_swap_001",
+      "walletAddress": "0x71C4B7D84EfB9D8E79E5832D1Cd7b7A42C9F02",
+      "type": "Swap",
+      "asset": "USDC to BZPAY",
+      "amount": 4000,
+      "status": "Success",
+      "feeUsd": 0.02,
+      "txHash": "0x3ef0ab18d5a22374e3a8a7ad5f5219bd",
+      "createdAt": "2026-04-29T00:38:10.000Z"
+    },
+    {
+      "id": "tx_stake_001",
+      "walletAddress": "0x71C4B7D84EfB9D8E79E5832D1Cd7b7A42C9F02",
+      "type": "Stake",
+      "asset": "BZPAY/USDC LP",
+      "amount": 320.45,
+      "status": "Success",
+      "feeUsd": 0.01,
+      "txHash": "0x44bc119da4f3926b5ba54f53a77d902f",
+      "createdAt": "2026-04-29T00:25:43.000Z"
+    },
+    {
+      "id": "tx_send_001",
+      "walletAddress": "0x71C4B7D84EfB9D8E79E5832D1Cd7b7A42C9F02",
+      "type": "Send",
+      "asset": "USDC",
+      "amount": 875,
+      "status": "Failed",
+      "feeUsd": 0,
+      "txHash": "Wallet rejected",
+      "createdAt": "2026-04-29T00:12:02.000Z"
+    }
+  ],
+  "settings": {
+    "defaultSlippagePercent": 0.5,
+    "preferredCurrency": "USD",
+    "theme": "blue-flame-dark",
+    "developerMode": true,
+    "reducedMotion": false,
+    "notifications": "in_app"
+  }
+}

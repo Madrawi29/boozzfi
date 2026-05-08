@@ -1,0 +1,245 @@
+.shell {
+  min-height: 100svh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 20px;
+  color: #07101f;
+  background:
+    linear-gradient(115deg, rgba(125, 211, 252, 0.16), transparent 34%),
+    linear-gradient(160deg, rgba(20, 184, 166, 0.12), transparent 48%),
+    linear-gradient(135deg, #061a48 0%, #0b55d9 48%, #031226 100%);
+}
+
+.panel {
+  width: min(900px, 100%);
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 28px 70px rgba(2, 8, 23, 0.3);
+  backdrop-filter: blur(14px);
+}
+
+.balanceLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #f8fbff, #eff6ff);
+  color: #475569;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.balanceValue {
+  color: #0d3fbd;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.formGrid {
+  width: min(620px, 100%);
+  display: grid;
+  gap: 14px;
+  margin: 18px auto 0;
+}
+
+.field {
+  width: 100%;
+  min-height: 50px;
+  padding: 0 14px;
+  border: 1px solid #cbdaf0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #07101f;
+  font: inherit;
+  font-weight: 750;
+  outline: none;
+  box-shadow: 0 10px 24px rgba(15, 45, 95, 0.06);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.field:focus {
+  border-color: #1769ff;
+  box-shadow:
+    0 0 0 4px rgba(23, 105, 255, 0.12),
+    0 10px 24px rgba(15, 45, 95, 0.08);
+}
+
+.buttonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.primaryButton,
+.secondaryButton {
+  min-height: 48px;
+  border-radius: 8px;
+  padding: 0 18px;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    opacity 160ms ease;
+}
+
+.primaryButton {
+  border: 0;
+  color: #ffffff;
+  background: linear-gradient(135deg, #082c91, #1769ff 58%, #14b8a6);
+  box-shadow: 0 16px 34px rgba(23, 105, 255, 0.26);
+}
+
+.secondaryButton {
+  border: 1px solid #b9cdf0;
+  color: #0d3fbd;
+  background: #f1f6ff;
+}
+
+.primaryButton:hover,
+.secondaryButton:hover {
+  transform: translateY(-1px);
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+  transform: none;
+  box-shadow: none;
+}
+
+.statusText {
+  width: min(620px, 100%);
+  margin: 18px auto 0;
+  color: #334155;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.txLine {
+  width: min(620px, 100%);
+  margin: 10px auto 0;
+  color: #475569;
+  font-weight: 800;
+}
+
+.link {
+  color: #0d3fbd;
+  font-weight: 950;
+}
+
+.wizardGrid {
+  width: min(760px, 100%);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 20px auto;
+}
+
+.stepPill,
+.stepPillActive {
+  min-height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  font-weight: 950;
+}
+
+.stepPill {
+  border: 1px solid #dbe4f0;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+.stepPillActive {
+  border: 1px solid #93c5fd;
+  color: #0d3fbd;
+  background: linear-gradient(180deg, #e5f0ff, #dbeafe);
+}
+
+.sectionStack {
+  width: min(760px, 100%);
+  display: grid;
+  gap: 16px;
+  margin: 0 auto;
+}
+
+.sectionCard {
+  border: 1px solid #dbe4f0;
+  border-radius: 8px;
+  padding: 18px;
+  background: #ffffff;
+  box-shadow: 0 18px 36px rgba(15, 45, 95, 0.08);
+}
+
+.sectionCard h2 {
+  margin: 0 0 14px;
+  color: #07101f;
+  font-size: 20px;
+  font-weight: 950;
+}
+
+.verifyGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.detailItem {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f8fbff;
+}
+
+.detailLabel {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.detailValue {
+  display: block;
+  margin-top: 4px;
+  color: #07101f;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .shell {
+    padding: 22px 12px;
+  }
+
+  .panel {
+    padding: 20px;
+  }
+
+  .wizardGrid,
+  .verifyGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+  }
+}

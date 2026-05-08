@@ -1,0 +1,43 @@
+{
+  "name": "b00zz-fi-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Next.js, Drizzle SQLite, and Better Auth prototype for the B00ZZ FI Arc Testnet dashboard.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "db:push": "drizzle-kit push",
+    "db:seed": "tsx scripts/seed.ts",
+    "check": "tsc --noEmit && node --check public/app.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@circle-fin/adapter-circle-wallets": "^1.2.7",
+    "@circle-fin/adapter-viem-v2": "^1.8.3",
+    "@circle-fin/app-kit": "^1.4.1",
+    "@libsql/client": "^0.17.3",
+    "@privy-io/react-auth": "^3.23.1",
+    "@solana-program/system": "^0.12.0",
+    "@solana-program/token": "^0.13.0",
+    "@solana/kit": "^6.8.0",
+    "better-auth": "^1.6.9",
+    "drizzle-orm": "^0.45.2",
+    "next": "^16.2.4",
+    "qr": "^0.6.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "solc": "^0.8.35",
+    "viem": "^2.48.7"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
+}
