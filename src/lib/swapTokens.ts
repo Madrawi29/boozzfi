@@ -1,10 +1,10 @@
-import { AppKit } from "@circle-fin/app-kit";
 import type { ConnectedWallet } from "@privy-io/react-auth";
 import type { Address } from "viem";
 import {
   BROWSER_SWAP_PROXY_KIT_KEY,
   withCircleStablecoinProxy,
 } from "@/src/lib/circleStablecoinProxy";
+import { createCircleAppKit } from "./circleAppKit";
 import { getPrivyAdapter } from "./privyAdapter";
 
 export type SwapToken = "USDC" | "EURC" | "cirBTC";
@@ -85,7 +85,7 @@ export async function swapTokens(
   if (!wallet) throw new Error("Privy wallet not found");
 
   const adapter = await getPrivyAdapter(wallet);
-  const kit = new AppKit();
+  const kit = createCircleAppKit();
 
   try {
     return await withCircleStablecoinProxy(() => {

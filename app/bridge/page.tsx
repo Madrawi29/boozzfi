@@ -28,6 +28,7 @@ const CHAIN_IDS: Record<BridgeChain, number> = {
   Arbitrum_Sepolia: 421614,
   Avalanche_Fuji: 43113,
   Optimism_Sepolia: 11155420,
+  Pharos_Testnet: 688689,
   Arc_Testnet: 5042002,
 };
 

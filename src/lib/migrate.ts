@@ -26,6 +26,7 @@ async function migrate() {
     "CREATE TABLE IF NOT EXISTS positions (id TEXT PRIMARY KEY NOT NULL, type TEXT NOT NULL, label TEXT NOT NULL, value TEXT NOT NULL, detail TEXT NOT NULL)",
     "CREATE TABLE IF NOT EXISTS risk_items (id TEXT PRIMARY KEY NOT NULL, level TEXT NOT NULL, message TEXT NOT NULL)",
     "CREATE TABLE IF NOT EXISTS activities (id TEXT PRIMARY KEY NOT NULL, walletAddress TEXT NOT NULL, type TEXT NOT NULL, asset TEXT NOT NULL, amount REAL NOT NULL, status TEXT NOT NULL, feeUsd REAL NOT NULL, txHash TEXT NOT NULL, createdAt INTEGER NOT NULL)",
+    "CREATE TABLE IF NOT EXISTS payment_records (referenceId TEXT PRIMARY KEY NOT NULL, invoiceId TEXT, invoiceUrl TEXT, userWallet TEXT NOT NULL, idrAmount REAL NOT NULL, usdcAmount TEXT NOT NULL, status TEXT NOT NULL, xenditStatus TEXT, circleTransactionId TEXT, txHash TEXT, errorMessage TEXT, createdAt INTEGER NOT NULL, updatedAt INTEGER NOT NULL)",
     "CREATE TABLE IF NOT EXISTS settings (id TEXT PRIMARY KEY NOT NULL, defaultSlippagePercent REAL NOT NULL, preferredCurrency TEXT NOT NULL, theme TEXT NOT NULL, developerMode INTEGER NOT NULL, reducedMotion INTEGER NOT NULL, notifications TEXT NOT NULL)"
   ]);
 }

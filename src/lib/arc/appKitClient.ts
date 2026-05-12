@@ -1,4 +1,3 @@
-import { AppKit } from "@circle-fin/app-kit";
 import {
   ArbitrumSepolia,
   ArcTestnet,
@@ -7,9 +6,13 @@ import {
   EthereumSepolia,
   OptimismSepolia,
 } from "@circle-fin/app-kit/chains";
+import {
+  createCircleAppKit,
+  getCircleAppKitConfigStatus,
+} from "@/src/lib/circleAppKit";
 import { ARC_TESTNET, FEATURE_MATRIX, SERVER_SECRET_READINESS, getExplorerTxUrl } from "./config";
 
-export const appKit = new AppKit();
+export const appKit = createCircleAppKit();
 
 export const SUPPORTED_APP_KIT_ROUTES = {
   send: {
@@ -69,6 +72,7 @@ export function getAppKitReadiness() {
       explorerUrl: ARC_TESTNET.explorerUrl
     },
     routes: SUPPORTED_APP_KIT_ROUTES,
+    telemetry: getCircleAppKitConfigStatus(),
     featureMatrix: FEATURE_MATRIX
   };
 }

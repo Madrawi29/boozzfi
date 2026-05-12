@@ -3,16 +3,13 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { Address, Hash } from "viem";
-import {
-  getArcWalletTokenBalances,
-  getBalances,
-  getUsdcBalance,
-  type WalletTokenBalance,
-} from "@/src/lib/getBalances";
+import type { WalletTokenBalance } from "@/src/lib/getBalances";
 import { useAppWallet } from "@/src/hooks/useAppWallet";
-import { verifyDeployedToken } from "@/src/lib/deployToken";
 import { getArcExplorerTxUrl } from "@/src/lib/explorers";
-import { arcPublicClient } from "@/src/lib/arc/viem";
+import {
+  enrichTokensWithUsdPrices,
+  type PortfolioTokenBalance,
+} from "@/src/lib/portfolioPrices";
 import type { BridgeChain } from "@/src/lib/bridgeUsdc";
 import {
   getNetworkByChainId,
@@ -76,7 +73,18 @@ const ACTIONS = [
     detail: "CCTP routes to Arc",
     icon: "bridge",
   },
+  {
+    href: "/buy-usdc",
+    label: "Buy USDC",
+    detail: "Xendit Test Mode",
+    icon: "buy",
+  },
 ] as const;
+
+const DASHBOARD_FETCH_TIMEOUT_MS = 4000;
+const REFRESH_INTERVAL_MS = 30000;
+
+type ActionIconName = (typeof ACTIONS)[number]["icon"];
 
 function CopyIcon() {
   return (
@@ -97,7 +105,87 @@ function WalletIcon() {
   );
 }
 
-function ActionIcon({ name }: { name: (typeof ACTIONS)[number]["icon"] }) {
+function getTokenLogo(symbolOrAsset: string) {
+  const value = symbolOrAsset.toLowerCase();
+
+  if (value.includes("usdc")) {
+    return {
+      alt: "USDC",
+      src: "https://cryptologos.cc/logos/usd-coin-usdc-logo.svg?v=040",
+    };
+  }
+
+  if (value.includes("eurc") || value.includes("euroc")) {
+    return {
+      alt: "EURC",
+      src: "https://cryptologos.cc/logos/euro-coin-euroc-logo.svg?v=040",
+    };
+  }
+
+  if (value.includes("cirbtc") || value.includes("btc")) {
+    return {
+      alt: "BTC",
+      src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=040",
+    };
+  }
+
+  return null;
+}
+
+function TokenLogo({
+  fallback,
+  symbolOrAsset,
+}: {
+  fallback: string;
+  symbolOrAsset: string;
+}) {
+  const logo = getTokenLogo(symbolOrAsset);
+
+  if (!logo) {
+    return <span className={styles.tokenBadge}>{fallback}</span>;
+  }
+
+  return (
+    <span className={styles.tokenLogoBadge}>
+      <img alt={logo.alt} src={logo.src} />
+    </span>
+  );
+}
+
+function XLogoIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.657l-5.214-6.817-5.966 6.817H1.68l7.73-8.835L1.254 2.25h6.826l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" />
+    </svg>
+  );
+}
+
+function GmailIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 5h16v14H4z" fill="#ffffff" />
+      <path d="M4 5h16v3.2l-8 5.2-8-5.2z" fill="#EA4335" />
+      <path d="M4 8.2v10.3c0 .28.22.5.5.5H7V10.15z" fill="#34A853" />
+      <path d="M20 8.2v10.3c0 .28-.22.5-.5.5H17V10.15z" fill="#4285F4" />
+      <path d="M7 10.15 4 8.2V6.4l8 5.2 8-5.2v1.8l-3 1.95-5 3.25z" fill="#FBBC04" />
+      <path d="M4.5 5h15c.28 0 .5.22.5.5v.9l-8 5.2-8-5.2v-.9c0-.28.22-.5.5-.5Z" fill="#EA4335" />
+    </svg>
+  );
+}
+
+function ActionIcon({ name }: { name: ActionIconName }) {
+  if (name === "buy") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 7h16" />
+        <path d="M5 7v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7" />
+        <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+        <path d="M9 13h6" />
+        <path d="M12 10v6" />
+      </svg>
+    );
+  }
+
   if (name === "send") {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -127,12 +215,79 @@ function ActionIcon({ name }: { name: (typeof ACTIONS)[number]["icon"] }) {
   );
 }
 
+function getActivityIconName(activity: Activity): ActionIconName | null {
+  const value = `${activity.type} ${activity.asset}`.toLowerCase();
+
+  if (value.includes("swap")) return "swap";
+  if (value.includes("bridge")) return "bridge";
+  if (value.includes("send") || value.includes("transfer")) return "send";
+  if (
+    value.includes("buy") ||
+    value.includes("xendit") ||
+    value.includes("payment")
+  ) {
+    return "buy";
+  }
+
+  return null;
+}
+
+function ActivityLogo({ activity }: { activity: Activity }) {
+  const iconName = getActivityIconName(activity);
+
+  if (iconName) {
+    return (
+      <span className={styles.activityActionIcon}>
+        <ActionIcon name={iconName} />
+      </span>
+    );
+  }
+
+  return (
+    <TokenLogo
+      fallback={activity.type.slice(0, 1)}
+      symbolOrAsset={activity.asset}
+    />
+  );
+}
+
 function formatAmount(value?: number) {
   if (typeof value !== "number" || Number.isNaN(value)) return "0.000000";
   return value.toLocaleString("en-US", {
     maximumFractionDigits: 6,
     minimumFractionDigits: 2,
   });
+}
+
+function formatUsd(value?: number | null) {
+  if (typeof value !== "number" || Number.isNaN(value)) return "$0.00";
+  return value.toLocaleString("en-US", {
+    currency: "USD",
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+    style: "currency",
+  });
+}
+
+function formatPriceUsd(value?: number | null) {
+  if (typeof value !== "number" || Number.isNaN(value)) return "No price";
+  return value.toLocaleString("en-US", {
+    currency: "USD",
+    maximumFractionDigits: value >= 1 ? 2 : 8,
+    minimumFractionDigits: value >= 1 ? 2 : 2,
+    style: "currency",
+  });
+}
+
+function getPriceDisplaySymbol(symbol: string) {
+  return symbol.toUpperCase() === "CIRBTC" ? "BTC" : symbol;
+}
+
+function formatPriceTime(value?: string) {
+  if (!value) return "Live market price";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Live market price";
+  return `Price updated ${date.toLocaleTimeString()}`;
 }
 
 function formatTime(value?: string) {
@@ -173,6 +328,29 @@ function getActivityExplorerUrl(activity: Activity) {
   return getArcExplorerTxUrl(activity.txHash);
 }
 
+async function fetchJsonWithTimeout<T>(url: string): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(
+    () => controller.abort(),
+    DASHBOARD_FETCH_TIMEOUT_MS,
+  );
+
+  try {
+    const response = await fetch(url, {
+      cache: "no-store",
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`${url} unavailable`);
+    }
+
+    return (await response.json()) as T;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function getDeployedTokenBalances(
   ownerAddress: Address,
   activities: Activity[],
@@ -193,6 +371,11 @@ async function getDeployedTokenBalances(
   const deployedTokens = await Promise.all(
     createTxHashes.map(async (txHash) => {
       try {
+        const [{ arcPublicClient }, { verifyDeployedToken }] =
+          await Promise.all([
+            import("@/src/lib/arc/viem"),
+            import("@/src/lib/deployToken"),
+          ]);
         const receipt = await arcPublicClient.getTransactionReceipt({ hash: txHash });
         if (!receipt.contractAddress) return null;
 
@@ -236,8 +419,7 @@ export function DashboardHome() {
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [arcStatus, setArcStatus] = useState<ArcStatus | null>(null);
-  const [arcUsdc, setArcUsdc] = useState<number | null>(null);
-  const [walletTokens, setWalletTokens] = useState<WalletTokenBalance[]>([]);
+  const [walletTokens, setWalletTokens] = useState<PortfolioTokenBalance[]>([]);
   const [selectedNetwork, setSelectedNetwork] =
     useState<BridgeChain>("Arc_Testnet");
   const [loading, setLoading] = useState(true);
@@ -252,28 +434,41 @@ export function DashboardHome() {
     }
   }, [chainId]);
 
+  const refreshWalletAssets = useCallback(
+    async (walletAddress: Address, nextActivities: Activity[]) => {
+      try {
+        const { getArcWalletTokenBalances } = await import(
+          "@/src/lib/getBalances"
+        );
+        const arcWalletTokens = await getArcWalletTokenBalances(walletAddress);
+        const deployedTokens = await getDeployedTokenBalances(
+          walletAddress,
+          nextActivities,
+        );
+        const pricedTokens = await enrichTokensWithUsdPrices([
+          ...arcWalletTokens,
+          ...deployedTokens,
+        ]);
+        setWalletTokens(pricedTokens);
+      } catch {
+        setWalletTokens([]);
+      }
+    },
+    [],
+  );
+
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
       const activityUrl = address
         ? `/api/activity?walletAddress=${encodeURIComponent(address)}`
         : "/api/activity";
-      const [dashboardResponse, statusResponse, activityResponse] = await Promise.all([
-        fetch("/api/dashboard", { cache: "no-store" }),
-        fetch("/api/arc/status", { cache: "no-store" }),
-        fetch(activityUrl, { cache: "no-store" }),
+      const [nextDashboard, nextStatus, nextActivity] = await Promise.all([
+        fetchJsonWithTimeout<DashboardResponse>("/api/dashboard"),
+        fetchJsonWithTimeout<ArcStatus>("/api/arc/status"),
+        fetchJsonWithTimeout<{ activities?: Activity[] }>(activityUrl),
       ]);
 
-      if (!dashboardResponse.ok) throw new Error("Dashboard API unavailable");
-      if (!statusResponse.ok) throw new Error("Arc status API unavailable");
-      if (!activityResponse.ok) throw new Error("Activity API unavailable");
-
-      const nextDashboard =
-        (await dashboardResponse.json()) as DashboardResponse;
-      const nextStatus = (await statusResponse.json()) as ArcStatus;
-      const nextActivity = (await activityResponse.json()) as {
-        activities?: Activity[];
-      };
       const nextActivities = nextActivity.activities ?? [];
 
       setDashboard(nextDashboard);
@@ -281,26 +476,8 @@ export function DashboardHome() {
       setActivities(nextActivities.slice(0, 5));
 
       if (address) {
-        try {
-          const arcWalletTokens = await getArcWalletTokenBalances(address);
-          const deployedTokens = await getDeployedTokenBalances(
-            address,
-            nextActivities,
-          );
-          setWalletTokens([...arcWalletTokens, ...deployedTokens]);
-
-          if (selectedNetwork === "Arc_Testnet") {
-            const balances = await getBalances(address);
-            setArcUsdc(balances.usdc);
-          } else {
-            setArcUsdc(await getUsdcBalance(address, selectedNetwork));
-          }
-        } catch {
-          setArcUsdc(null);
-          setWalletTokens([]);
-        }
+        void refreshWalletAssets(address, nextActivities);
       } else {
-        setArcUsdc(null);
         setWalletTokens([]);
       }
 
@@ -315,18 +492,31 @@ export function DashboardHome() {
     } finally {
       setLoading(false);
     }
-  }, [address, selectedNetwork]);
+  }, [address, refreshWalletAssets, selectedNetwork]);
 
   useEffect(() => {
     refresh();
-    const timer = window.setInterval(refresh, 15000);
+    const timer = window.setInterval(refresh, REFRESH_INTERVAL_MS);
     return () => window.clearInterval(timer);
   }, [refresh]);
 
-  const unifiedBalances =
-    dashboard?.integration?.unifiedBalance?.balances?.slice(0, 3) ?? [];
   const selectedNetworkMeta =
     getNetworkByKey(selectedNetwork) ?? SUPPORTED_NETWORKS[0];
+  const pricedTokens = walletTokens.filter(
+    (token) => typeof token.valueUsd === "number",
+  );
+  const totalPortfolioValueUsd = pricedTokens.reduce(
+    (total, token) => total + (token.valueUsd ?? 0),
+    0,
+  );
+  const latestPriceUpdate = walletTokens
+    .map((token) =>
+      token.priceUpdatedAt ? new Date(token.priceUpdatedAt).getTime() : 0,
+    )
+    .sort((left, right) => right - left)[0];
+  const latestPriceUpdateText = latestPriceUpdate
+    ? formatPriceTime(new Date(latestPriceUpdate).toISOString())
+    : "Live market prices";
 
   const switchSelectedNetwork = async (networkKey: BridgeChain) => {
     const network = getNetworkByKey(networkKey);
@@ -396,32 +586,11 @@ export function DashboardHome() {
             <span className={styles.navIcon}>⌁</span>
             Bridge
           </Link>
-          <Link className={styles.navItem} href="/create">
-            <span className={styles.navIcon}>+</span>
-            Deploy
+          <Link className={styles.navItem} href="/buy-usdc">
+            <span className={styles.navIcon}>$</span>
+            Buy USDC
           </Link>
         </nav>
-
-        <div className={styles.socialLinks}>
-          <a
-            className={styles.xLink}
-            href="https://x.com/BoozzFi"
-            rel="noreferrer"
-            target="_blank"
-          >
-            <span>X</span>
-            Official Boozz FI
-          </a>
-          <a
-            className={styles.xLink}
-            href="https://x.com/tomatpan"
-            rel="noreferrer"
-            target="_blank"
-          >
-            <span>X</span>
-            Builder
-          </a>
-        </div>
 
         <div className={styles.sideStatus}>
           <span
@@ -444,10 +613,6 @@ export function DashboardHome() {
 
       <section className={styles.workspace}>
         <header className={styles.header}>
-          <div>
-            <h1>Portfolio Overview</h1>
-          </div>
-
           <div className={styles.headerActions}>
             {authenticated ? (
               <>
@@ -537,12 +702,12 @@ export function DashboardHome() {
           <section className={`${styles.panel} ${styles.balancePanel}`}>
             <div className={styles.panelHeader}>
               <div>
-                <p className={styles.cardLabel}>Total Balance</p>
-                <h2>{formatAmount(arcUsdc ?? 0)} USDC</h2>
+                <p className={styles.cardLabel}>Portfolio Assets</p>
+                <h2>{formatUsd(totalPortfolioValueUsd)}</h2>
                 <span className={styles.muted}>
                   {address
-                    ? `Live ${selectedNetworkMeta.label} wallet ${shortAddress}`
-                    : `Connect wallet to read ${selectedNetworkMeta.label} balance`}
+                    ? `${latestPriceUpdateText} for wallet ${shortAddress}`
+                    : "Connect wallet to read USDC, EURC, and cirBTC value"}
                 </span>
               </div>
               <button
@@ -575,6 +740,46 @@ export function DashboardHome() {
                 />
                 <circle cx="760" cy="39" fill="#0f4fe6" r="9" />
               </svg>
+            </div>
+
+            <div className={styles.portfolioSummary}>
+              <div>
+                <span>Priced Assets</span>
+                <strong>{pricedTokens.length}</strong>
+              </div>
+              <div>
+                <span>Total Coins</span>
+                <strong>{walletTokens.length}</strong>
+              </div>
+            </div>
+
+            <div className={styles.tokenList}>
+              {walletTokens.length > 0 ? (
+                walletTokens.map((token) => (
+                  <div className={styles.tokenItem} key={token.address}>
+                    <TokenLogo
+                      fallback={token.symbol.slice(0, 2).toUpperCase()}
+                      symbolOrAsset={token.symbol}
+                    />
+                    <span className={styles.tokenMeta}>
+                      <strong>{token.symbol}</strong>
+                      <small>{token.name}</small>
+                    </span>
+                    <span className={styles.tokenNumbers}>
+                      <strong>{formatUsd(token.valueUsd)}</strong>
+                      <small>
+                        {formatAmount(token.balance)} {token.symbol} @{" "}
+                        {getPriceDisplaySymbol(token.symbol)}{" "}
+                        {formatPriceUsd(token.priceUsd)}
+                      </small>
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className={styles.emptyAssets}>
+                  Connect wallet to read Arc Testnet assets.
+                </div>
+              )}
             </div>
           </section>
 
@@ -618,7 +823,7 @@ export function DashboardHome() {
                   target="_blank"
                 >
                   <span className={styles.assetCell}>
-                    <span className={styles.assetIcon}>{activity.type.slice(0, 1)}</span>
+                    <ActivityLogo activity={activity} />
                     <span>
                       <strong>{activity.type}</strong>
                       <small>{activity.asset}</small>
@@ -642,92 +847,51 @@ export function DashboardHome() {
             </div>
           </section>
 
-          <section className={`${styles.panel} ${styles.assetsPanel}`}>
-            <div className={styles.panelHeaderCompact}>
-              <p className={styles.cardLabel}>Wallet Assets</p>
-            </div>
-
-            <div className={styles.tokenList}>
-              {walletTokens.length > 0 ? (
-                walletTokens.map((token) => (
-                  <div className={styles.tokenItem} key={token.address}>
-                    <span className={styles.tokenBadge}>
-                      {token.symbol.slice(0, 2).toUpperCase()}
-                    </span>
-                    <span className={styles.tokenMeta}>
-                      <strong>{token.symbol}</strong>
-                      <small>{token.name}</small>
-                    </span>
-                    <strong>{formatAmount(token.balance)}</strong>
-                  </div>
-                ))
-              ) : (
-                <div className={styles.emptyAssets}>
-                  Connect wallet to read Arc Testnet assets.
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section className={`${styles.panel} ${styles.networkPanel}`}>
-            <div className={styles.panelHeaderCompact}>
-              <p className={styles.cardLabel}>Realtime Network</p>
-              <select
-                className={styles.networkSelect}
-                value={selectedNetwork}
-                onChange={(event) =>
-                  switchSelectedNetwork(event.target.value as BridgeChain)
-                }
+          <section className={`${styles.panel} ${styles.contactPanel}`}>
+            <p className={styles.cardLabel}>Contact</p>
+            <div className={styles.contactList}>
+              <a
+                className={styles.contactItem}
+                href="https://x.com/BoozzFi"
+                rel="noreferrer"
+                target="_blank"
               >
-                {SUPPORTED_NETWORKS.map((network) => (
-                  <option key={network.key} value={network.key}>
-                    {network.label}
-                  </option>
-                ))}
-              </select>
+                <span className={styles.contactIcon}>
+                  <XLogoIcon />
+                </span>
+                <strong>Official Boozz FI</strong>
+              </a>
+              <a
+                className={styles.contactItem}
+                href="https://x.com/tomatpan"
+                rel="noreferrer"
+                target="_blank"
+              >
+                <span className={styles.contactIcon}>
+                  <XLogoIcon />
+                </span>
+                <strong>Builder</strong>
+              </a>
+              <a
+                className={styles.contactItem}
+                href="mailto:boozzfi@gmail.com"
+              >
+                <span className={styles.contactIcon}>
+                  <GmailIcon />
+                </span>
+                <strong>boozzfi@gmail.com</strong>
+              </a>
             </div>
-            <div className={styles.metricGrid}>
-              <div>
-                <span>Network</span>
-                <strong>{selectedNetworkMeta.label}</strong>
-              </div>
-              <div>
-                <span>Arc RPC</span>
-                <strong>{arcStatus?.ok ? "Online" : "Degraded"}</strong>
-              </div>
-              <div>
-                <span>Wallet Chain</span>
-                <strong>{chainId ?? "..."}</strong>
-              </div>
-              <div>
-                <span>Selected ID</span>
-                <strong>{selectedNetworkMeta.chainId}</strong>
-              </div>
-            </div>
-            <p className={styles.statusLine}>
-              {authenticated
-                ? status
-                : "Connect Privy wallet to switch networks automatically."}
-            </p>
-          </section>
 
-          <section className={`${styles.panel} ${styles.unifiedPanel}`}>
-            <p className={styles.cardLabel}>Unified Balance</p>
-            <div className={styles.balanceList}>
-              {unifiedBalances.length > 0 ? (
-                unifiedBalances.map((item) => (
-                  <div className={styles.balanceItem} key={`${item.chain}-${item.status}`}>
-                    <span>{item.chain}</span>
-                    <strong>{item.amount}</strong>
-                  </div>
-                ))
-              ) : (
-                <div className={styles.balanceItem}>
-                  <span>Gateway</span>
-                  <strong>Ready</strong>
-                </div>
-              )}
-            </div>
+            <button
+              className={styles.supportBubble}
+              onClick={() =>
+                setStatus("Support is coming soon. Contact Boozz FI by X or email for now.")
+              }
+            >
+              <span>?</span>
+              Support
+            </button>
           </section>
         </div>
       </section>

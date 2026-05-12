@@ -100,41 +100,6 @@
   font-size: 13px;
 }
 
-.socialLinks {
-  display: grid;
-  gap: 8px;
-  margin-top: auto;
-  margin-bottom: 12px;
-}
-
-.xLink {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 8px;
-  color: #e0f2fe;
-  text-decoration: none;
-  background: rgba(2, 8, 23, 0.26);
-}
-
-.xLink:hover {
-  color: #ffffff;
-  background: rgba(2, 8, 23, 0.42);
-}
-
-.xLink span {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  color: #061a48;
-  background: #ffffff;
-  font-weight: 900;
-}
-
 .statusDotOnline,
 .statusDotOffline {
   width: 12px;
@@ -194,7 +159,6 @@
 .secondaryButton,
 .faucetButton,
 .pillButton,
-.networkSelect,
 .headerNetworkSelect {
   min-height: 44px;
   border: 0;
@@ -298,13 +262,6 @@
   background: #e5f0ff;
 }
 
-.networkSelect {
-  width: min(250px, 100%);
-  padding: 0 14px;
-  color: #0d3fbd;
-  background: #e5f0ff;
-}
-
 .headerNetworkSelect {
   width: 230px;
   max-width: 100%;
@@ -329,17 +286,15 @@
 
 .balancePanel,
 .activityPanel,
-.networkPanel,
-.unifiedPanel {
+.contactPanel {
   padding: 28px 34px;
 }
 
 .balancePanel {
-  min-height: 346px;
+  min-height: 520px;
 }
 
-.actionsPanel,
-.assetsPanel {
+.actionsPanel {
   padding: 28px;
 }
 
@@ -381,6 +336,37 @@
 .chart svg {
   width: 100%;
   height: 100%;
+}
+
+.portfolioSummary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.portfolioSummary div {
+  padding: 12px;
+  border-radius: 8px;
+  background: #f1f6ff;
+}
+
+.portfolioSummary span,
+.portfolioSummary strong {
+  display: block;
+}
+
+.portfolioSummary span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.portfolioSummary strong {
+  margin-top: 5px;
+  color: #07101f;
+  font-weight: 950;
 }
 
 .actions {
@@ -494,6 +480,30 @@
   background: linear-gradient(135deg, #0f4fe6, #10b981);
 }
 
+.activityActionIcon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  color: #ffffff;
+  background:
+    radial-gradient(circle at 70% 20%, rgba(125, 211, 252, 0.42), transparent 32%),
+    linear-gradient(135deg, #061d4d, #0f4fe6);
+  box-shadow: 0 10px 24px rgba(15, 79, 230, 0.18);
+}
+
+.activityActionIcon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.2;
+}
+
 .success,
 .pending,
 .failed {
@@ -519,10 +529,6 @@
   background: #ffe4e6;
 }
 
-.assetsPanel {
-  min-height: 190px;
-}
-
 .textLink {
   color: #0f4fe6;
   font-weight: 800;
@@ -537,7 +543,7 @@
 
 .tokenItem {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) max-content;
+  grid-template-columns: 38px minmax(0, 1fr) minmax(170px, max-content);
   align-items: center;
   gap: 12px;
   padding: 12px;
@@ -550,11 +556,33 @@
   place-items: center;
   width: 38px;
   height: 38px;
+  flex: 0 0 auto;
   border-radius: 999px;
   color: #ffffff;
   background: linear-gradient(135deg, #0f4fe6, #10b981);
   font-size: 12px;
   font-weight: 900;
+}
+
+.tokenLogoBadge {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow:
+    0 10px 24px rgba(15, 79, 230, 0.14),
+    inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+.tokenLogoBadge img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .tokenMeta {
@@ -571,6 +599,23 @@
   color: #64748b;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.tokenNumbers {
+  min-width: 0;
+  text-align: right;
+}
+
+.tokenNumbers strong,
+.tokenNumbers small {
+  display: block;
+}
+
+.tokenNumbers small {
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 750;
 }
 
 .emptyAssets {
@@ -630,56 +675,81 @@
   color: #0f4fe6;
 }
 
-.networkPanel,
-.unifiedPanel {
+.contactPanel {
   min-height: 180px;
 }
 
-.metricGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-
-.metricGrid div,
-.balanceItem {
-  padding: 16px;
-  border-radius: 8px;
-  background: #f1f6ff;
-}
-
-.metricGrid span,
-.balanceItem span {
-  display: block;
-  color: #64748b;
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.metricGrid strong,
-.balanceItem strong {
-  display: block;
-  margin-top: 7px;
-  color: #07101f;
-  overflow-wrap: anywhere;
-}
-
-.statusLine {
-  margin: 18px 0 0;
-  color: #475569;
-}
-
-.balanceList {
+.contactList {
   display: grid;
   gap: 10px;
 }
 
-.balanceItem {
-  display: flex;
+.contactItem {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
+  min-height: 50px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #07101f;
+  text-decoration: none;
+  background: #f1f6ff;
+}
+
+.contactItem:hover {
+  background: #e5f0ff;
+}
+
+.contactIcon,
+.supportBubble span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f4fe6, #10b981);
+  font-weight: 950;
+}
+
+.contactIcon {
+  color: #07101f;
+  background: #ffffff;
+  box-shadow:
+    0 8px 18px rgba(15, 79, 230, 0.12),
+    inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+.contactIcon svg {
+  width: 19px;
+  height: 19px;
+  fill: currentColor;
+}
+
+.contactItem strong {
+  overflow-wrap: anywhere;
+}
+
+.supportBubble {
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 18px 8px 9px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #061d4d, #0f4fe6);
+  box-shadow: 0 16px 36px rgba(15, 79, 230, 0.22);
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.supportBubble:hover {
+  transform: translateY(-1px);
 }
 
 @media (max-width: 1180px) {
@@ -709,9 +779,6 @@
     margin-top: 18px;
   }
 
-  .socialLinks {
-    margin-top: 18px;
-  }
 }
 
 @media (max-width: 960px) {
@@ -733,9 +800,6 @@
     font-size: 42px;
   }
 
-  .metricGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 @media (max-width: 640px) {
@@ -778,10 +842,8 @@
 
   .balancePanel,
   .activityPanel,
-  .networkPanel,
-  .unifiedPanel,
-  .actionsPanel,
-  .assetsPanel {
+  .contactPanel,
+  .actionsPanel {
     padding: 20px;
   }
 
@@ -805,7 +867,6 @@
     font-size: 22px;
   }
 
-  .metricGrid,
   .steps {
     grid-template-columns: 1fr 1fr;
   }
@@ -813,4 +874,235 @@
   .steps::before {
     display: none;
   }
+}
+
+:global(body[data-display-mode="desktop"]) .shell {
+  min-width: 1080px;
+  grid-template-columns: 272px minmax(0, 1fr);
+}
+
+:global(body[data-display-mode="desktop"]) .sidebar {
+  min-height: 100vh;
+  padding: 32px 24px;
+}
+
+:global(body[data-display-mode="desktop"]) .workspace {
+  padding: 38px;
+}
+
+:global(body[data-display-mode="desktop"]) .nav {
+  grid-template-columns: 1fr;
+  margin-top: 52px;
+}
+
+:global(body[data-display-mode="desktop"]) .navItem {
+  justify-content: flex-start;
+}
+
+:global(body[data-display-mode="desktop"]) .navIcon {
+  display: inline-block;
+}
+
+:global(body[data-display-mode="desktop"]) .grid {
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
+}
+
+:global(body[data-display-mode="desktop"]) .header,
+:global(body[data-display-mode="desktop"]) .panelHeader {
+  align-items: center;
+  flex-direction: row;
+}
+
+:global(body[data-display-mode="desktop"]) .headerActions {
+  align-items: center;
+  flex-direction: row;
+}
+
+:global(body[data-display-mode="desktop"]) .tableHead {
+  display: grid;
+}
+
+:global(body[data-display-mode="desktop"]) .activityRow {
+  grid-template-columns: minmax(220px, 1.35fr) minmax(120px, 0.7fr) minmax(100px, 0.65fr) minmax(110px, 0.55fr);
+}
+
+:global(body[data-display-mode="mobile"]) .shell {
+  position: relative;
+  width: min(430px, calc(100vw - 18px));
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  margin: 9px auto 86px;
+  overflow: hidden;
+  border-radius: 18px;
+  box-shadow: 0 28px 72px rgba(2, 8, 23, 0.24);
+}
+
+:global(body[data-display-mode="mobile"]) .sidebar {
+  min-height: auto;
+  padding: 14px;
+}
+
+:global(body[data-display-mode="mobile"]) .brandLogo {
+  width: 84px;
+}
+
+:global(body[data-display-mode="mobile"]) .nav {
+  height: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+:global(body[data-display-mode="mobile"]) .navItem {
+  min-height: 0;
+  padding: 0;
+  font-size: 0;
+}
+
+:global(body[data-display-mode="mobile"]) .navIcon {
+  display: none;
+}
+
+:global(body[data-display-mode="mobile"]) .sideStatus {
+  width: min(100%, 390px);
+  margin-top: 82px;
+}
+
+:global(body[data-display-mode="mobile"]) .workspace {
+  padding: 18px;
+}
+
+:global(body[data-display-mode="mobile"]) .header,
+:global(body[data-display-mode="mobile"]) .panelHeader {
+  align-items: stretch;
+  flex-direction: column;
+}
+
+:global(body[data-display-mode="mobile"]) .header h1 {
+  font-size: 28px;
+}
+
+:global(body[data-display-mode="mobile"]) .headerActions {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 5;
+  width: min(290px, calc(100% - 116px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 82px;
+  align-items: center;
+  gap: 8px;
+}
+
+:global(body[data-display-mode="mobile"]) .headerNetworkSelect {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 28px 0 11px;
+  font-size: 12px;
+}
+
+:global(body[data-display-mode="mobile"]) .faucetButton {
+  min-height: 38px;
+  justify-content: center;
+  width: 82px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+:global(body[data-display-mode="mobile"]) .connectButton {
+  grid-column: 1 / -1;
+  min-height: 42px;
+  justify-content: center;
+  width: 100%;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+:global(body[data-display-mode="mobile"]) .walletCluster {
+  grid-column: 1 / -1;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+:global(body[data-display-mode="mobile"]) .walletButton,
+:global(body[data-display-mode="mobile"]) .copyAddressButton,
+:global(body[data-display-mode="mobile"]) .disconnectButton {
+  justify-content: center;
+  min-height: 42px;
+  gap: 7px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+:global(body[data-display-mode="mobile"]) .walletButton {
+  min-width: 0;
+  border-radius: 8px 0 0 8px;
+}
+
+:global(body[data-display-mode="mobile"]) .walletButton span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:global(body[data-display-mode="mobile"]) .copyAddressButton,
+:global(body[data-display-mode="mobile"]) .disconnectButton {
+  width: auto;
+}
+
+:global(body[data-display-mode="mobile"]) .grid {
+  grid-template-columns: 1fr;
+}
+
+:global(body[data-display-mode="mobile"]) .balancePanel,
+:global(body[data-display-mode="mobile"]) .activityPanel,
+:global(body[data-display-mode="mobile"]) .contactPanel,
+:global(body[data-display-mode="mobile"]) .actionsPanel {
+  padding: 20px;
+}
+
+:global(body[data-display-mode="mobile"]) .balancePanel h2 {
+  font-size: 38px;
+}
+
+:global(body[data-display-mode="mobile"]) .portfolioSummary {
+  grid-template-columns: 1fr;
+}
+
+:global(body[data-display-mode="mobile"]) .tokenItem {
+  grid-template-columns: 38px minmax(0, 1fr);
+}
+
+:global(body[data-display-mode="mobile"]) .tokenNumbers {
+  grid-column: 1 / -1;
+  text-align: left;
+}
+
+:global(body[data-display-mode="mobile"]) .tableHead {
+  display: none;
+}
+
+:global(body[data-display-mode="mobile"]) .activityRow {
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 14px 0;
+}
+
+:global(body[data-display-mode="mobile"]) .actionCard {
+  grid-template-columns: minmax(0, 1fr) 32px;
+  min-height: 86px;
+  padding: 0 16px;
+}
+
+:global(body[data-display-mode="mobile"]) .actionCard strong {
+  font-size: 22px;
+}
+
+:global(body[data-display-mode="mobile"]) .steps {
+  grid-template-columns: 1fr 1fr;
+}
+
+:global(body[data-display-mode="mobile"]) .steps::before {
+  display: none;
 }

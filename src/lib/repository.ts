@@ -180,6 +180,59 @@ export async function updateActivityStatus(input: {
   };
 }
 
+export async function finalizeActivityTransaction(input: {
+  currentTxHash?: string;
+  nextTxHash?: string;
+  status?: string;
+}) {
+  await ensureDatabase();
+
+  if (!input.currentTxHash) {
+    return { errors: { currentTxHash: "Current transaction hash is required" } };
+  }
+  if (!input.status) {
+    return { errors: { status: "Status is required" } };
+  }
+
+  const [activity] = await db
+    .select()
+    .from(schema.activities)
+    .where(eq(schema.activities.txHash, input.currentTxHash))
+    .limit(1);
+
+  if (!activity) {
+    return { errors: { currentTxHash: "Activity not found" } };
+  }
+
+  const txHash = input.nextTxHash || activity.txHash;
+
+  await db
+    .update(schema.activities)
+    .set({
+      status: input.status,
+      txHash,
+    })
+    .where(eq(schema.activities.txHash, input.currentTxHash));
+
+  const [{ pending }] = await db
+    .select({ pending: sql<number>`count(*)` })
+    .from(schema.activities)
+    .where(eq(schema.activities.status, "Pending"));
+
+  await db
+    .update(schema.portfolioSnapshots)
+    .set({ pendingTransactions: Number(pending) })
+    .where(eq(schema.portfolioSnapshots.id, "portfolio_demo_001"));
+
+  return {
+    activity: {
+      ...activity,
+      status: input.status,
+      txHash,
+    },
+  };
+}
+
 export async function buildTransactionPreview(input: TransactionPreviewInput) {
   await ensureDatabase();
   const errors = validatePreview(input);

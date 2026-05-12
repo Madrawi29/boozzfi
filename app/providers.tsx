@@ -3,6 +3,7 @@
 import { PrivyProvider } from "@privy-io/react-auth";
 import { AppWalletProvider } from "@/src/providers/AppWalletProvider";
 import { arcTestnetChain } from "@/src/lib/arc/viem";
+import { DisplayModeToggle } from "@/src/components/DisplayModeToggle";
 import {
   arbitrumSepolia,
   avalancheFuji,
@@ -55,7 +56,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
         },
       }}
     >
-      <AppWalletProvider>{children}</AppWalletProvider>
+      <AppWalletProvider>
+        {children}
+        <DisplayModeToggle />
+      </AppWalletProvider>
     </PrivyProvider>
   );
 }

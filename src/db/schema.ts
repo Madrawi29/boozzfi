@@ -170,6 +170,22 @@ export const activities = sqliteTable("activities", {
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull()
 });
 
+export const paymentRecords = sqliteTable("payment_records", {
+  referenceId: text("referenceId").primaryKey(),
+  invoiceId: text("invoiceId"),
+  invoiceUrl: text("invoiceUrl"),
+  userWallet: text("userWallet").notNull(),
+  idrAmount: real("idrAmount").notNull(),
+  usdcAmount: text("usdcAmount").notNull(),
+  status: text("status").notNull(),
+  xenditStatus: text("xenditStatus"),
+  circleTransactionId: text("circleTransactionId"),
+  txHash: text("txHash"),
+  errorMessage: text("errorMessage"),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull()
+});
+
 export const settings = sqliteTable("settings", {
   id: text("id").primaryKey(),
   defaultSlippagePercent: real("defaultSlippagePercent").notNull(),
