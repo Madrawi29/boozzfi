@@ -19,12 +19,6 @@ type PrivyConfig = NonNullable<
 const PRIVY_LOGIN_METHODS: NonNullable<PrivyConfig["loginMethods"]> = [
   "wallet",
   "email",
-  "google",
-  "twitter",
-  "discord",
-  "telegram",
-  "instagram",
-  "tiktok",
 ];
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -49,9 +43,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
         embeddedWallets: {
           ethereum: {
             createOnLogin: "all-users",
-          },
-          solana: {
-            createOnLogin: "off",
           },
         },
       }}

@@ -4,17 +4,35 @@ import { useEffect, useState } from "react";
 import { isAddress, type Address } from "viem";
 import { FeatureHeader } from "@/src/components/FeatureHeader";
 import styles from "@/src/components/FeaturePage.module.css";
+import { AmountPercentControls } from "@/src/components/TokenBalanceControls";
+import {
+  isTokenIconSymbol,
+  TokenIcon,
+  type TokenIconSymbol,
+} from "@/src/components/TokenIcon";
 import {
   MinimumTransactionNotice,
   TransactionProcessing,
 } from "@/src/components/TransactionNotice";
 import { useAppWallet } from "@/src/hooks/useAppWallet";
 import { getArcExplorerTxUrl } from "@/src/lib/explorers";
-import { getBalances } from "@/src/lib/getBalances";
+import { getBalances, type WalletTokenBalance } from "@/src/lib/getBalances";
 import { recordActivity, updateActivityStatus } from "@/src/lib/activity";
 import { TOKENS } from "@/src/lib/tokens";
 import { sendToken } from "@/src/lib/tokenTransfer";
 import { waitForArcTransactionStatus } from "@/src/lib/transactions";
+
+function formatTokenAmount(value: number, symbol: string) {
+  return value.toLocaleString("en-US", {
+    maximumFractionDigits: symbol === "cirBTC" ? 8 : 6,
+    minimumFractionDigits: symbol === "cirBTC" ? 8 : 2,
+  });
+}
+
+function shortenAddress(value: string) {
+  if (!isAddress(value)) return "Not ready";
+  return `${value.slice(0, 6)}...${value.slice(-4)}`;
+}
 
 export default function SendPage() {
   const { address, login, wallet } = useAppWallet();
@@ -24,17 +42,29 @@ export default function SendPage() {
   const [status, setStatus] = useState("");
   const [txHash, setTxHash] = useState("");
   const [loading, setLoading] = useState(false);
-  const [usdcBalance, setUsdcBalance] = useState(0);
+  const [tokenBalances, setTokenBalances] = useState<WalletTokenBalance[]>([]);
+  const selectedTokenBalance =
+    tokenBalances.find((token) => token.symbol === selectedToken)?.balance ?? 0;
+  const recipientIsValid = isAddress(to);
+  const numericAmount = Number(amount);
+  const amountIsValid = Number.isFinite(numericAmount) && numericAmount > 0;
+  const selectedTokenIcon: TokenIconSymbol = isTokenIconSymbol(selectedToken)
+    ? selectedToken
+    : "USDC";
 
-  useEffect(() => {
+  async function refreshBalances() {
     if (!address) {
-      setUsdcBalance(0);
+      setTokenBalances([]);
       return;
     }
 
     getBalances(address)
-      .then((balances) => setUsdcBalance(balances.usdc))
-      .catch(() => setUsdcBalance(0));
+      .then((balances) => setTokenBalances(balances.tokens))
+      .catch(() => setTokenBalances([]));
+  }
+
+  useEffect(() => {
+    refreshBalances();
   }, [address]);
 
   const handleSend = async () => {
@@ -79,8 +109,7 @@ export default function SendPage() {
       const activityStatus = await waitForArcTransactionStatus(hash);
       await updateActivityStatus(hash, activityStatus);
       if (address) {
-        const balances = await getBalances(address);
-        setUsdcBalance(balances.usdc);
+        await refreshBalances();
       }
       setStatus(
         activityStatus === "Success"
@@ -109,41 +138,60 @@ export default function SendPage() {
       <section className={styles.panel}>
       <FeatureHeader title="Send Token" />
 
-      <p className={styles.balanceLine}>
-        USDC Balance{" "}
-        <b className={styles.balanceValue}>{usdcBalance.toFixed(6)} USDC</b>
-      </p>
+      <div className={styles.defiLayout}>
+        <section className={styles.defiActionCard}>
+          <MinimumTransactionNotice />
 
-      <div className={styles.formGrid}>
-        <MinimumTransactionNotice />
+          <label className={styles.defiFieldGroup}>
+            <span>Recipient</span>
+            <input
+              placeholder="0x recipient address"
+              value={to}
+              onChange={(event) => setTo(event.target.value)}
+            />
+            <small className={recipientIsValid ? styles.defiPositive : styles.defiMuted}>
+              {recipientIsValid ? "Valid EVM address" : "Paste a valid wallet address"}
+            </small>
+          </label>
 
-        <input
-          className={styles.field}
-          placeholder="Recipient address"
-          value={to}
-          onChange={(event) => setTo(event.target.value)}
-        />
+          <div className={styles.swapTokenBox}>
+            <div className={styles.defiTokenHeader}>
+              <span>Asset</span>
+              <strong>
+                Balance {formatTokenAmount(selectedTokenBalance, selectedToken)} {selectedToken}
+              </strong>
+            </div>
+            <div className={styles.defiTokenInputRow}>
+              <div className={styles.defiAssetSelect}>
+                <TokenIcon symbol={selectedTokenIcon} />
+                <select
+                  value={selectedToken}
+                  onChange={(event) => setSelectedToken(event.target.value)}
+                >
+                  {TOKENS.map((token) => (
+                    <option key={token.symbol} value={token.symbol}>
+                      {token.symbol}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <input
+                inputMode="decimal"
+                placeholder="0.0"
+                value={amount}
+                onChange={(event) => setAmount(event.target.value)}
+              />
+            </div>
+          </div>
 
-        <select
-          className={styles.field}
-          value={selectedToken}
-          onChange={(event) => setSelectedToken(event.target.value)}
-        >
-          {TOKENS.map((token) => (
-            <option key={token.symbol} value={token.symbol}>
-              {token.symbol} - {token.name}
-            </option>
-          ))}
-        </select>
+          <AmountPercentControls
+            amount={amount}
+            balance={selectedTokenBalance}
+            disabled={loading}
+            onSelectAmount={setAmount}
+            symbol={selectedToken}
+          />
 
-        <input
-          className={styles.field}
-          placeholder={`Amount ${selectedToken}`}
-          value={amount}
-          onChange={(event) => setAmount(event.target.value)}
-        />
-
-        <div className={styles.buttonRow}>
           <button
             className={styles.primaryButton}
             onClick={handleSend}
@@ -151,12 +199,47 @@ export default function SendPage() {
           >
             {loading ? "Processing..." : `Send ${selectedToken}`}
           </button>
-        </div>
 
-        <TransactionProcessing
-          active={loading}
-          label="Waiting for the send transaction to process..."
-        />
+          <TransactionProcessing
+            active={loading}
+            label="Waiting for the send transaction to process..."
+          />
+        </section>
+
+        <aside className={styles.defiQuotePanel}>
+          <div className={styles.defiQuoteHero}>
+            <span>Transfer Review</span>
+            <strong className={styles.tokenHeroLine}>
+              <TokenIcon size="sm" symbol={selectedTokenIcon} />
+              {amountIsValid ? formatTokenAmount(numericAmount, selectedToken) : "0.00"} {selectedToken}
+            </strong>
+            <small>Arc Testnet transfer</small>
+          </div>
+          <div className={styles.defiInfoList}>
+            <div>
+              <span>Recipient</span>
+              <strong>{shortenAddress(to)}</strong>
+            </div>
+            <div>
+              <span>Network</span>
+              <strong>Arc Testnet</strong>
+            </div>
+            <div>
+              <span>Estimated fee</span>
+              <strong>USDC gas</strong>
+            </div>
+            <div>
+              <span>Balance after</span>
+              <strong>
+                {formatTokenAmount(
+                  Math.max(0, selectedTokenBalance - (amountIsValid ? numericAmount : 0)),
+                  selectedToken,
+                )}{" "}
+                {selectedToken}
+              </strong>
+            </div>
+          </div>
+        </aside>
       </div>
 
       {status && <p className={styles.statusText}>{status}</p>}

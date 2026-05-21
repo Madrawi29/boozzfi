@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { FeatureHeader } from "@/src/components/FeatureHeader";
 import styles from "@/src/components/FeaturePage.module.css";
+import { AmountPercentControls } from "@/src/components/TokenBalanceControls";
+import { TokenIcon } from "@/src/components/TokenIcon";
 import {
   MinimumTransactionNotice,
   TransactionProcessing,
@@ -10,7 +12,11 @@ import {
 import { bridgeUsdc, type BridgeChain } from "@/src/lib/bridgeUsdc";
 import { recordActivity } from "@/src/lib/activity";
 import { getBridgeExplorerTxUrl } from "@/src/lib/explorers";
-import { getUsdcBalance } from "@/src/lib/getBalances";
+import {
+  getBalances,
+  getUsdcBalance,
+  type WalletTokenBalance,
+} from "@/src/lib/getBalances";
 import { useAppWallet } from "@/src/hooks/useAppWallet";
 
 const CHAINS: { label: string; value: BridgeChain }[] = [
@@ -44,6 +50,13 @@ function getBridgeStepChain(
   return stepName.toLowerCase() === "mint" ? toChain : fromChain;
 }
 
+function formatUsdc(value: number) {
+  return value.toLocaleString("en-US", {
+    maximumFractionDigits: 6,
+    minimumFractionDigits: 2,
+  });
+}
+
 export default function BridgePage() {
   const { authenticated, login, wallet, address } = useAppWallet();
 
@@ -55,14 +68,23 @@ export default function BridgePage() {
   const [txUrl, setTxUrl] = useState("");
   const [fromChain, setFromChain] = useState<BridgeChain>("Ethereum_Sepolia");
   const [toChain, setToChain] = useState<BridgeChain>("Arc_Testnet");
+  const [tokenBalances, setTokenBalances] = useState<WalletTokenBalance[]>([]);
   const bridgeMinimumUsdc =
     fromChain === "Arc_Testnet" && toChain === "Ethereum_Sepolia" ? 2 : 1;
+  const numericAmount = Number(amount);
+  const estimatedReceive =
+    Number.isFinite(numericAmount) && numericAmount > 0 ? numericAmount : 0;
+  const routeReady = fromChain !== toChain && estimatedReceive >= bridgeMinimumUsdc;
 
   const refreshBalance = async (chain = fromChain) => {
     if (!address) return;
 
-    const nextBalance = await getUsdcBalance(address, chain);
+    const [nextBalance, arcBalances] = await Promise.all([
+      getUsdcBalance(address, chain),
+      getBalances(address).catch(() => ({ tokens: [] as WalletTokenBalance[] })),
+    ]);
     setBalance(nextBalance);
+    setTokenBalances(arcBalances.tokens);
   };
 
   const handleFromChainChange = async (chain: BridgeChain) => {
@@ -201,68 +223,138 @@ export default function BridgePage() {
       <FeatureHeader title="Bridge USDC" />
 
       <p className={styles.balanceLine}>
-        USDC Balance{" "}
+        <span className={styles.tokenSymbolLine}>
+          <TokenIcon size="sm" symbol="USDC" />
+          {getChainLabel(fromChain)} USDC Balance
+        </span>{" "}
         <b className={styles.balanceValue}>{balance.toFixed(6)} USDC</b>
       </p>
 
-      <div className={styles.formGrid}>
-        <MinimumTransactionNotice minimumUsdc={bridgeMinimumUsdc} />
+      <div className={styles.defiLayout}>
+        <section className={styles.defiActionCard}>
+          <MinimumTransactionNotice minimumUsdc={bridgeMinimumUsdc} />
 
-        <select
-          className={styles.field}
-          value={fromChain}
-          onChange={(event) =>
-            handleFromChainChange(event.target.value as BridgeChain)
-          }
-        >
-          {CHAINS.map((chain) => (
-            <option key={chain.value} value={chain.value}>
-              From: {chain.label}
-            </option>
-          ))}
-        </select>
+          <div className={styles.bridgeRouteGrid}>
+            <label className={styles.defiFieldGroup}>
+              <span>From</span>
+              <select
+                value={fromChain}
+                onChange={(event) =>
+                  handleFromChainChange(event.target.value as BridgeChain)
+                }
+              >
+                {CHAINS.map((chain) => (
+                  <option key={chain.value} value={chain.value}>
+                    {chain.label}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-        <select
-          className={styles.field}
-          value={toChain}
-          onChange={(event) => setToChain(event.target.value as BridgeChain)}
-        >
-          {CHAINS.map((chain) => (
-            <option key={chain.value} value={chain.value}>
-              To: {chain.label}
-            </option>
-          ))}
-        </select>
+            <label className={styles.defiFieldGroup}>
+              <span>To</span>
+              <select
+                value={toChain}
+                onChange={(event) => setToChain(event.target.value as BridgeChain)}
+              >
+                {CHAINS.map((chain) => (
+                  <option key={chain.value} value={chain.value}>
+                    {chain.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
 
-        <input
-          className={styles.field}
-          placeholder="Amount USDC"
-          value={amount}
-          onChange={(event) => setAmount(event.target.value)}
-        />
+          <div className={styles.swapTokenBox}>
+            <div className={styles.defiTokenHeader}>
+              <span>Bridge amount</span>
+              <strong>Balance {formatUsdc(balance)} USDC</strong>
+            </div>
+            <div className={styles.defiTokenInputRow}>
+              <div className={styles.defiAssetSelect}>
+                <TokenIcon symbol="USDC" />
+                <select value="USDC" disabled>
+                  <option value="USDC">USDC</option>
+                </select>
+              </div>
+              <input
+                inputMode="decimal"
+                placeholder="0.0"
+                value={amount}
+                onChange={(event) => setAmount(event.target.value)}
+              />
+            </div>
+          </div>
 
-        <div className={styles.buttonRow}>
-          <button
-            className={styles.primaryButton}
-            onClick={handleBridge}
+          <AmountPercentControls
+            amount={amount}
+            balance={balance}
             disabled={loading}
-          >
-            {loading ? "Processing..." : "Bridge"}
-          </button>
+            onSelectAmount={setAmount}
+            symbol="USDC"
+          />
 
-          <button
-            className={styles.secondaryButton}
-            onClick={() => refreshBalance()}
-            disabled={!wallet || loading}
-          >
-            Refresh
-          </button>
-        </div>
+          <div className={styles.buttonRow}>
+            <button
+              className={styles.primaryButton}
+              onClick={handleBridge}
+              disabled={loading}
+            >
+              {loading ? "Processing..." : "Bridge USDC"}
+            </button>
 
-        <TransactionProcessing
-          active={loading}
-          label="Waiting for the bridge transaction to process..."
-        />
+            <button
+              className={styles.secondaryButton}
+              onClick={() => refreshBalance()}
+              disabled={!wallet || loading}
+            >
+              Refresh
+            </button>
+          </div>
+
+          <TransactionProcessing
+            active={loading}
+            label="Waiting for the bridge transaction to process..."
+          />
+        </section>
+
+        <aside className={styles.defiQuotePanel}>
+          <div className={styles.defiQuoteHero}>
+            <span>Bridge Route</span>
+            <strong className={styles.tokenHeroLine}>
+              <TokenIcon size="sm" symbol="USDC" />
+              {formatUsdc(estimatedReceive)} USDC
+            </strong>
+            <small>
+              {getChainLabel(fromChain)} to {getChainLabel(toChain)}
+            </small>
+          </div>
+          <div className={styles.defiInfoList}>
+            <div>
+              <span>Estimated receive</span>
+              <strong>{formatUsdc(estimatedReceive)} USDC</strong>
+            </div>
+            <div>
+              <span>Bridge provider</span>
+              <strong>Circle CCTP</strong>
+            </div>
+            <div>
+              <span>Minimum</span>
+              <strong>{bridgeMinimumUsdc} USDC</strong>
+            </div>
+            <div>
+              <span>Route status</span>
+              <strong>{routeReady ? "Ready" : "Needs review"}</strong>
+            </div>
+          </div>
+          <div className={styles.bridgeSteps}>
+            <span>Approve</span>
+            <span>Burn</span>
+            <span>Attest</span>
+            <span>Mint</span>
+          </div>
+        </aside>
       </div>
 
       {status && <p className={styles.statusText}>{status}</p>}

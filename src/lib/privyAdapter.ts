@@ -28,7 +28,7 @@ export async function getPrivyAdapter(wallet: ConnectedWallet) {
   return await createViemAdapterFromProvider({
     provider: provider as unknown as ViemAdapterProvider,
     capabilities: {
-      addressContext: "developer-controlled",
+      addressContext: "user-controlled",
       supportedChains: [...PRIVY_APP_KIT_CHAINS],
     },
   });

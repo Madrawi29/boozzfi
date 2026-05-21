@@ -43,7 +43,7 @@ export async function bridgeUsdc(
   if (!wallet) throw new Error("Privy wallet not found");
 
   const adapter = await getPrivyAdapter(wallet);
-  const address = wallet.address as Address;
+  const recipientAddress = wallet.address as Address;
 
   const kit = createCircleAppKit();
   await wallet.switchChain(BRIDGE_CHAIN_ID[fromChain]);
@@ -54,11 +54,10 @@ export async function bridgeUsdc(
         from: {
           adapter,
           chain: fromChain,
-          address,
         },
         to: {
           chain: toChain,
-          recipientAddress: address,
+          recipientAddress,
           useForwarder: true as const,
         },
         amount,
@@ -71,13 +70,11 @@ export async function bridgeUsdc(
         from: {
           adapter,
           chain: fromChain,
-          address,
         },
         to: {
           adapter,
           chain: toChain,
-          address,
-          recipientAddress: address,
+          recipientAddress,
           useForwarder: false as const,
         },
         amount,

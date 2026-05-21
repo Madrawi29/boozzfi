@@ -7,6 +7,12 @@ import { ensureDatabase } from "@/src/lib/migrate";
 import { money, shortenHash } from "@/src/lib/format";
 import { getCircleManagedWalletReadiness } from "@/src/server/circle/wallets";
 import { getUnifiedBalanceStatus } from "@/src/server/gateway/status";
+import {
+  insertRow,
+  isSupabaseConfigured,
+  selectRows,
+  updateRows,
+} from "@/src/server/supabase/rest";
 
 export type ActivityInput = {
   walletAddress?: string;
@@ -26,6 +32,39 @@ export type TransactionPreviewInput = {
   recipient?: string;
   sourceChain?: string;
 };
+
+type ActivityRow = typeof schema.activities.$inferSelect;
+
+const DEFAULT_WALLET_ADDRESS = "0x71C4B7D84EfB9D8E79E5832D1Cd7b7A42C9F02";
+
+function deserializeSupabaseActivity(row: Record<string, unknown>): ActivityRow {
+  return {
+    id: String(row.id),
+    walletAddress: String(row.walletAddress),
+    type: String(row.type),
+    asset: String(row.asset),
+    amount: Number(row.amount),
+    status: String(row.status),
+    feeUsd: Number(row.feeUsd),
+    txHash: String(row.txHash),
+    createdAt: new Date(String(row.createdAt)),
+  };
+}
+
+async function countSupabasePendingActivities() {
+  const rows = await selectRows<{ id: string }>("activities", {
+    filters: { status: "Pending" },
+    select: "id",
+  });
+  return rows.length;
+}
+
+async function updateSupabasePendingCount() {
+  const pending = await countSupabasePendingActivities();
+  await updateRows("portfolio_snapshots", { id: "portfolio_demo_001" }, {
+    pendingTransactions: pending,
+  });
+}
 
 export async function getDashboard() {
   await ensureDatabase();
@@ -91,6 +130,25 @@ export async function listActivities(filters: {
   search?: string | null;
   walletAddress?: string | null;
 }) {
+  if (isSupabaseConfigured()) {
+    try {
+      const rows = await selectRows<Record<string, unknown>>("activities", {
+        filters: {
+          type: filters.type,
+          status: filters.status,
+          walletAddress: filters.walletAddress,
+        },
+        order: "createdAt.desc",
+      });
+      return rows.map(deserializeSupabaseActivity).filter((activity) => {
+        const haystack = `${activity.type} ${activity.asset} ${activity.status} ${activity.txHash}`.toLowerCase();
+        return !filters.search || haystack.includes(filters.search.toLowerCase());
+      });
+    } catch (error) {
+      console.warn("Supabase activity read failed; falling back to local database.", error);
+    }
+  }
+
   await ensureDatabase();
   const rows = await db.select().from(schema.activities).orderBy(desc(schema.activities.createdAt));
   return rows.filter((activity) => {
@@ -106,16 +164,14 @@ export async function listActivities(filters: {
 }
 
 export async function addActivity(input: ActivityInput) {
-  await ensureDatabase();
   const errors = validateActivity(input);
   if (Object.keys(errors).length) {
     return { errors };
   }
 
-  const [wallet] = await db.select().from(schema.wallets).limit(1);
   const activity = {
     id: `tx_${randomUUID()}`,
-    walletAddress: input.walletAddress || wallet.address,
+    walletAddress: input.walletAddress || DEFAULT_WALLET_ADDRESS,
     type: input.type!,
     asset: input.asset!,
     amount: Number(input.amount),
@@ -125,6 +181,22 @@ export async function addActivity(input: ActivityInput) {
     createdAt: new Date()
   };
 
+  if (isSupabaseConfigured()) {
+    try {
+      const row = await insertRow<Record<string, unknown>>("activities", {
+        ...activity,
+        createdAt: activity.createdAt.toISOString(),
+      });
+      await updateSupabasePendingCount();
+      return {
+        activity: row ? deserializeSupabaseActivity(row) : activity,
+      };
+    } catch (error) {
+      console.warn("Supabase activity insert failed; falling back to local database.", error);
+    }
+  }
+
+  await ensureDatabase();
   await db.insert(schema.activities).values(activity);
   const [{ pending }] = await db
     .select({ pending: sql<number>`count(*)` })
@@ -138,8 +210,6 @@ export async function updateActivityStatus(input: {
   txHash?: string;
   status?: string;
 }) {
-  await ensureDatabase();
-
   if (!input.txHash) {
     return { errors: { txHash: "Transaction hash is required" } };
   }
@@ -147,6 +217,27 @@ export async function updateActivityStatus(input: {
     return { errors: { status: "Status is required" } };
   }
 
+  if (isSupabaseConfigured()) {
+    try {
+      const rows = await updateRows<Record<string, unknown>>(
+        "activities",
+        { txHash: input.txHash },
+        { status: input.status },
+      );
+      const activity = rows[0];
+      if (!activity) {
+        return { errors: { txHash: "Activity not found" } };
+      }
+      await updateSupabasePendingCount();
+      return {
+        activity: deserializeSupabaseActivity(activity),
+      };
+    } catch (error) {
+      console.warn("Supabase activity update failed; falling back to local database.", error);
+    }
+  }
+
+  await ensureDatabase();
   const [activity] = await db
     .select()
     .from(schema.activities)
@@ -185,8 +276,6 @@ export async function finalizeActivityTransaction(input: {
   nextTxHash?: string;
   status?: string;
 }) {
-  await ensureDatabase();
-
   if (!input.currentTxHash) {
     return { errors: { currentTxHash: "Current transaction hash is required" } };
   }
@@ -194,6 +283,30 @@ export async function finalizeActivityTransaction(input: {
     return { errors: { status: "Status is required" } };
   }
 
+  if (isSupabaseConfigured()) {
+    try {
+      const rows = await updateRows<Record<string, unknown>>(
+        "activities",
+        { txHash: input.currentTxHash },
+        {
+          status: input.status,
+          txHash: input.nextTxHash || input.currentTxHash,
+        },
+      );
+      const activity = rows[0];
+      if (!activity) {
+        return { errors: { currentTxHash: "Activity not found" } };
+      }
+      await updateSupabasePendingCount();
+      return {
+        activity: deserializeSupabaseActivity(activity),
+      };
+    } catch (error) {
+      console.warn("Supabase activity finalize failed; falling back to local database.", error);
+    }
+  }
+
+  await ensureDatabase();
   const [activity] = await db
     .select()
     .from(schema.activities)
@@ -340,8 +453,8 @@ export async function seedIfNeeded() {
   await db.insert(schema.tokens).values([
     { id: "token_usdc_arc", chainId: 5042002, symbol: "USDC", name: "USD Coin", contractAddress: "0x3600000000000000000000000000000000000000", decimals: 18, balance: 48250, priceUsd: 1, valueUsd: 48250, label: "Arc native stablecoin and gas token", badge: "US", riskLevel: "low", kind: "usdc" },
     { id: "token_eurc_arc", chainId: 5042002, symbol: "EURC", name: "Euro Coin", contractAddress: "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a", decimals: 6, balance: 18420.5, priceUsd: 1.08, valueUsd: 19894.14, label: "Arc App Kit swap token", badge: "EU", riskLevel: "low", kind: "arc" },
-    { id: "token_bzpay", chainId: 5042002, symbol: "BZPAY", name: "B00ZZ Pay", contractAddress: "0x6B00zz0000000000000000000000000000BzPay", decimals: 18, balance: 92000, priceUsd: 0.3, valueUsd: 27600, label: "Created by you", badge: "BZ", riskLevel: "custom", kind: "custom" },
-    { id: "lp_bzpay_usdc", chainId: 5042002, symbol: "BZPAY/USDC LP", name: "BZPAY USDC Liquidity Position", contractAddress: "0x00000000000000000000000000000000B00zzLp", decimals: 18, balance: 1108.45, priceUsd: 14.2, valueUsd: 15742.72, label: "Liquidity position", badge: "LP", riskLevel: "medium", kind: "lp" }
+    { id: "token_boozz", chainId: 5042002, symbol: "BOOZZ", name: "BOOZZ Token", contractAddress: "0x6B00zz0000000000000000000000000000B00zz", decimals: 18, balance: 92000, priceUsd: 0.3, valueUsd: 27600, label: "Created by you", badge: "BZ", riskLevel: "custom", kind: "custom" },
+    { id: "lp_boozz_usdc", chainId: 5042002, symbol: "BOOZZ/USDC LP", name: "BOOZZ USDC Liquidity Position", contractAddress: "0x00000000000000000000000000000000B00zzLp", decimals: 18, balance: 1108.45, priceUsd: 14.2, valueUsd: 15742.72, label: "Liquidity position", badge: "LP", riskLevel: "medium", kind: "lp" }
   ]);
   await db.insert(schema.chainDistribution).values([
     { id: "chain_arc", chain: "Arc", percent: 62, valueUsd: 79645.65 },
@@ -364,8 +477,8 @@ export async function seedIfNeeded() {
     { id: "step_send", workflowId: "workflow_bridge_send_001", order: 3, stepType: "send", title: "Send to treasury wallet", status: "not_started", detail: "Ready after bridge completion", txHash: null }
   ]);
   await db.insert(schema.liquidityPools).values({
-    id: "pool_bzpay_usdc",
-    pair: "BZPAY/USDC",
+    id: "pool_boozz_usdc",
+    pair: "BOOZZ/USDC",
     status: "Healthy",
     reserveUsd: 36880,
     poolSharePercent: 24.7,
@@ -376,17 +489,17 @@ export async function seedIfNeeded() {
   await db.insert(schema.positions).values([
     { id: "position_staking", type: "staking", label: "Staked LP", value: "$8,920.00", detail: "APR estimate 18.4%" },
     { id: "position_vault", type: "vault", label: "Vault share", value: "7,412.18 vUSDC", detail: "Yield simulated" },
-    { id: "position_rewards", type: "rewards", label: "Rewards", value: "284.70 BZPAY", detail: "Unlocks in 3d 08h" }
+    { id: "position_rewards", type: "rewards", label: "Rewards", value: "284.70 BOOZZ", detail: "Unlocks in 3d 08h" }
   ]);
   await db.insert(schema.riskItems).values([
-    { id: "risk_custom_token", level: "warning", message: "BZPAY is a custom testnet token. Contract verification pending." },
+    { id: "risk_custom_token", level: "warning", message: "BOOZZ is a custom testnet token. Contract verification pending." },
     { id: "risk_allowance", level: "danger", message: "High allowance detected for router 0x93A2...01D4." },
     { id: "risk_network", level: "success", message: "Wallet is connected to the expected Arc Testnet chain ID." }
   ]);
   await db.insert(schema.activities).values([
     { id: "tx_bridge_001", walletAddress, type: "Bridge", asset: "USDC Sepolia to Arc", amount: 12500, status: "Pending", feeUsd: 1.42, txHash: "0x9d12c4a11d4c6e00e8f1e1a0db98a8c1", createdAt: new Date("2026-04-29T00:51:24.000Z") },
-    { id: "tx_swap_001", walletAddress, type: "Swap", asset: "USDC to BZPAY", amount: 4000, status: "Success", feeUsd: 0.02, txHash: "0x3ef0ab18d5a22374e3a8a7ad5f5219bd", createdAt: new Date("2026-04-29T00:38:10.000Z") },
-    { id: "tx_stake_001", walletAddress, type: "Stake", asset: "BZPAY/USDC LP", amount: 320.45, status: "Success", feeUsd: 0.01, txHash: "0x44bc119da4f3926b5ba54f53a77d902f", createdAt: new Date("2026-04-29T00:25:43.000Z") },
+    { id: "tx_swap_001", walletAddress, type: "Swap", asset: "USDC to BOOZZ", amount: 4000, status: "Success", feeUsd: 0.02, txHash: "0x3ef0ab18d5a22374e3a8a7ad5f5219bd", createdAt: new Date("2026-04-29T00:38:10.000Z") },
+    { id: "tx_stake_001", walletAddress, type: "Stake", asset: "BOOZZ/USDC LP", amount: 320.45, status: "Success", feeUsd: 0.01, txHash: "0x44bc119da4f3926b5ba54f53a77d902f", createdAt: new Date("2026-04-29T00:25:43.000Z") },
     { id: "tx_send_001", walletAddress, type: "Send", asset: "USDC", amount: 875, status: "Failed", feeUsd: 0, txHash: "Wallet rejected", createdAt: new Date("2026-04-29T00:12:02.000Z") }
   ]);
   await db.insert(schema.settings).values({

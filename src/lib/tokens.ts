@@ -5,6 +5,9 @@ export type Token = {
   decimals: number;
 };
 
+const VERIFIED_BOOZZ_TOKEN_ADDRESS =
+  "0xd6b443e56293ce991b17086acf5ec5545e7e1272";
+
 export const TOKENS: Token[] = [
   {
     symbol: "USDC",
@@ -13,9 +16,23 @@ export const TOKENS: Token[] = [
     decimals: 6,
   },
   {
-    symbol: "YOYO",
-    name: "YOYO Token",
-    address: "0xE4d7ea25cBbd9A05B831F4F33313512A98265c9E", // punyamu
+    symbol: "EURC",
+    name: "Euro Coin",
+    address: "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a",
+    decimals: 6,
+  },
+  {
+    symbol: "cirBTC",
+    name: "Circle Bitcoin",
+    address: "0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF",
+    decimals: 8,
+  },
+  {
+    symbol: "BOOZZ",
+    name: "BOOZZ Token",
+    address:
+      (process.env.NEXT_PUBLIC_BOOZZ_TOKEN_ADDRESS as `0x${string}` | undefined) ||
+      VERIFIED_BOOZZ_TOKEN_ADDRESS,
     decimals: 18,
   },
 ];

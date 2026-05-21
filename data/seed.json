@@ -59,11 +59,11 @@
       "kind": "arc"
     },
     {
-      "id": "token_bzpay",
+      "id": "token_boozz",
       "chainId": 424242,
-      "symbol": "BZPAY",
-      "name": "B00ZZ Pay",
-      "contractAddress": "0x6B00zz0000000000000000000000000000BzPay",
+      "symbol": "BOOZZ",
+      "name": "BOOZZ Token",
+      "contractAddress": "0x6B00zz0000000000000000000000000000B00zz",
       "decimals": 18,
       "balance": 92000,
       "priceUsd": 0.3,
@@ -74,10 +74,10 @@
       "kind": "custom"
     },
     {
-      "id": "lp_bzpay_usdc",
+      "id": "lp_boozz_usdc",
       "chainId": 424242,
-      "symbol": "BZPAY/USDC LP",
-      "name": "BZPAY USDC Liquidity Position",
+      "symbol": "BOOZZ/USDC LP",
+      "name": "BOOZZ USDC Liquidity Position",
       "contractAddress": "0x00000000000000000000000000000000B00zzLp",
       "decimals": 18,
       "balance": 1108.45,
@@ -129,8 +129,8 @@
     ]
   },
   "liquidityPool": {
-    "id": "pool_bzpay_usdc",
-    "pair": "BZPAY/USDC",
+    "id": "pool_boozz_usdc",
+    "pair": "BOOZZ/USDC",
     "status": "Healthy",
     "reserveUsd": 36880,
     "poolSharePercent": 24.7,
@@ -151,7 +151,7 @@
     },
     "rewards": {
       "label": "Rewards",
-      "value": "284.70 BZPAY",
+      "value": "284.70 BOOZZ",
       "detail": "Unlocks in 3d 08h"
     }
   },
@@ -160,7 +160,7 @@
     "items": [
       {
         "level": "warning",
-        "message": "BZPAY is a custom testnet token. Contract verification pending."
+        "message": "BOOZZ is a custom testnet token. Contract verification pending."
       },
       {
         "level": "danger",
@@ -188,7 +188,7 @@
       "id": "tx_swap_001",
       "walletAddress": "0x71C4B7D84EfB9D8E79E5832D1Cd7b7A42C9F02",
       "type": "Swap",
-      "asset": "USDC to BZPAY",
+      "asset": "USDC to BOOZZ",
       "amount": 4000,
       "status": "Success",
       "feeUsd": 0.02,
@@ -199,7 +199,7 @@
       "id": "tx_stake_001",
       "walletAddress": "0x71C4B7D84EfB9D8E79E5832D1Cd7b7A42C9F02",
       "type": "Stake",
-      "asset": "BZPAY/USDC LP",
+      "asset": "BOOZZ/USDC LP",
       "amount": 320.45,
       "status": "Success",
       "feeUsd": 0.01,

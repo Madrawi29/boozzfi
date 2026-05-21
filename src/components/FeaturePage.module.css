@@ -43,6 +43,104 @@
   font-weight: 950;
 }
 
+.tokenBalanceGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 16px;
+}
+
+.tokenBalanceItem {
+  display: grid;
+  gap: 4px;
+  min-height: 74px;
+  align-content: center;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  padding: 12px;
+  background: linear-gradient(180deg, #f8fbff, #eff6ff);
+}
+
+.tokenBalanceAsset,
+.tokenSymbolLine,
+.dexPairLabel,
+.lendingTokenLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tokenBalanceItem span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.tokenBalanceItem strong {
+  color: #0d3fbd;
+  font-size: 17px;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.percentControlStack {
+  display: grid;
+  gap: 8px;
+}
+
+.percentMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.percentMeta strong {
+  color: #0d3fbd;
+  overflow-wrap: anywhere;
+}
+
+.percentControls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.percentButton {
+  min-height: 48px;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  border: 1px solid #b9cdf0;
+  border-radius: 8px;
+  background: #f1f6ff;
+  color: #0d3fbd;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.percentButton small {
+  max-width: 100%;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.percentButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .formGrid {
   width: min(620px, 100%);
   display: grid;
@@ -143,6 +241,9 @@
 .txLine {
   width: min(620px, 100%);
   margin: 10px auto 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
   color: #475569;
   font-weight: 800;
 }
@@ -158,6 +259,54 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   margin: 20px auto;
+}
+
+.pairGrid {
+  width: min(760px, 100%);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 20px auto;
+}
+
+.pairCard,
+.pairCardActive {
+  min-height: 82px;
+  display: grid;
+  gap: 5px;
+  align-content: center;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.pairCard {
+  border: 1px solid #dbe4f0;
+  color: #334155;
+  background: #f8fafc;
+}
+
+.pairCardActive {
+  border: 1px solid #93c5fd;
+  color: #0d3fbd;
+  background: linear-gradient(180deg, #e5f0ff, #dbeafe);
+  box-shadow: 0 12px 28px rgba(23, 105, 255, 0.12);
+}
+
+.pairCard strong,
+.pairCardActive strong {
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.pairCard span,
+.pairCardActive span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
 .stepPill,
@@ -205,11 +354,866 @@
   font-weight: 950;
 }
 
+.dexLiquidityLayout {
+  width: min(820px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+  gap: 16px;
+  margin: 20px auto 0;
+  align-items: start;
+}
+
+.dexLiquidityCard,
+.dexSummaryPanel {
+  border: 1px solid #dbe4f0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 36px rgba(15, 45, 95, 0.08);
+}
+
+.dexLiquidityCard {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.dexLiquidityCard > .primaryButton {
+  width: 100%;
+}
+
+.dexCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dexCardHeader div,
+.dexSummaryHero {
+  display: grid;
+  gap: 3px;
+}
+
+.dexCardHeader span,
+.dexSummaryHero span,
+.dexSummaryGrid span,
+.dexInfoList span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.dexCardHeader strong {
+  color: #07101f;
+  font-size: 22px;
+  font-weight: 950;
+}
+
+.dexPairSelector {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.dexPairButton,
+.dexPairButtonActive {
+  min-height: 64px;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.dexPairButton {
+  border: 1px solid #dbe4f0;
+  background: #f8fafc;
+  color: #334155;
+}
+
+.dexPairButtonActive {
+  border: 1px solid #93c5fd;
+  background: linear-gradient(180deg, #e5f0ff, #dbeafe);
+  color: #0d3fbd;
+}
+
+.dexPairButton strong,
+.dexPairButtonActive strong {
+  font-size: 12px;
+  font-weight: 950;
+  line-height: 1.2;
+}
+
+.dexPairButton span,
+.dexPairButtonActive span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.dexTokenInputStack {
+  display: grid;
+  gap: 8px;
+}
+
+.dexTokenInput {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.38fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 92px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  padding: 14px;
+  background: linear-gradient(180deg, #f8fbff, #f1f7ff);
+}
+
+.dexTokenInput span {
+  display: grid;
+  gap: 4px;
+}
+
+.dexTokenInput b {
+  color: #0d3fbd;
+  font-size: 22px;
+  font-weight: 950;
+}
+
+.dexTokenInput small,
+.dexTokenInput em {
+  color: #64748b;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.dexTokenInput input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #07101f;
+  font: inherit;
+  font-size: 26px;
+  font-weight: 950;
+  outline: none;
+  text-align: right;
+}
+
+.dexTokenInput em {
+  grid-column: 1 / -1;
+  justify-self: end;
+}
+
+.dexPairJoin {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  justify-self: center;
+  margin: -2px 0;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0d3fbd;
+  font-size: 20px;
+  font-weight: 950;
+  box-shadow: 0 10px 18px rgba(15, 45, 95, 0.08);
+}
+
+.dexRateBox {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #f8fbff;
+}
+
+.dexRateBox span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.dexRateBox strong {
+  color: #07101f;
+  font-weight: 950;
+}
+
+.dexSummaryPanel {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.dexSummaryHero {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 14px;
+}
+
+.dexSummaryHero strong {
+  color: #07101f;
+  font-size: 24px;
+  font-weight: 950;
+}
+
+.dexSummaryHero small {
+  color: #475569;
+  font-weight: 800;
+}
+
+.dexSummaryGrid,
+.dexInfoList {
+  display: grid;
+  gap: 10px;
+}
+
+.dexSummaryGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dexSummaryGrid div,
+.dexInfoList div {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f8fbff;
+}
+
+.dexSummaryGrid strong,
+.dexInfoList strong {
+  color: #07101f;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.defiLayout {
+  width: min(860px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+  gap: 16px;
+  margin: 18px auto 0;
+  align-items: start;
+}
+
+.defiActionCard,
+.defiQuotePanel {
+  border: 1px solid #dbe4f0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 36px rgba(15, 45, 95, 0.08);
+}
+
+.defiActionCard {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.defiActionCard > .primaryButton {
+  width: 100%;
+}
+
+.defiFieldGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.defiFieldGroup span,
+.defiTokenHeader span,
+.defiQuoteHero span,
+.defiInfoList span,
+.onrampWalletLine span,
+.onrampReceiveBox span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.defiFieldGroup input,
+.defiFieldGroup select {
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid #cbdaf0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #07101f;
+  font: inherit;
+  font-weight: 850;
+  outline: none;
+  padding: 0 14px;
+}
+
+.defiFieldGroup small,
+.defiMuted {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.defiPositive {
+  color: #047857;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.swapTokenBox {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  padding: 14px;
+  background: linear-gradient(180deg, #f8fbff, #f1f7ff);
+}
+
+.defiTokenHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.defiTokenHeader strong {
+  color: #0d3fbd;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.defiTokenInputRow {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.35fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.defiAssetSelect {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.defiTokenInputRow select,
+.defiTokenInputRow input,
+.defiTokenInputRow output {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #07101f;
+  font: inherit;
+  outline: none;
+}
+
+.defiTokenInputRow select {
+  min-height: 44px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0d3fbd;
+  font-weight: 950;
+  padding: 0 10px;
+}
+
+.tokenHeroLine {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.defiTokenInputRow input,
+.defiTokenInputRow output {
+  font-size: 28px;
+  font-weight: 950;
+  text-align: right;
+}
+
+.swapFlipButton {
+  width: 64px;
+  min-height: 36px;
+  justify-self: center;
+  margin: -4px 0;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0d3fbd;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 10px 18px rgba(15, 45, 95, 0.08);
+}
+
+.defiQuotePanel {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.defiQuoteHero {
+  display: grid;
+  gap: 5px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 14px;
+}
+
+.defiQuoteHero strong {
+  color: #07101f;
+  font-size: 26px;
+  font-weight: 950;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.defiQuoteHero small {
+  color: #475569;
+  font-weight: 800;
+}
+
+.defiInfoList {
+  display: grid;
+  gap: 10px;
+}
+
+.defiInfoList div {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f8fbff;
+}
+
+.defiInfoList strong {
+  color: #07101f;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.bridgeRouteGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bridgeSteps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.bridgeSteps span {
+  min-height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #f1f6ff;
+  color: #0d3fbd;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.onrampWalletLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #f8fbff;
+  padding: 12px 14px;
+}
+
+.onrampWalletLine strong {
+  color: #0d3fbd;
+  font-weight: 950;
+}
+
+.onrampPresetGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.onrampReceiveBox {
+  display: grid;
+  gap: 5px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #f8fbff, #f1f7ff);
+  padding: 16px;
+}
+
+.onrampReceiveBox strong {
+  color: #0d3fbd;
+  font-size: 30px;
+  font-weight: 950;
+}
+
+.onrampReceiveBox small {
+  color: #475569;
+  font-weight: 800;
+}
+
+.lendingShell {
+  width: min(860px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+  gap: 16px;
+  margin: 20px auto 0;
+  align-items: start;
+}
+
+.lendingActionCard,
+.lendingRiskPanel,
+.lendingMarketTable {
+  border: 1px solid #dbe4f0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 36px rgba(15, 45, 95, 0.08);
+}
+
+.lendingActionCard,
+.lendingRiskPanel {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.lendingActionCard > .primaryButton {
+  width: 100%;
+}
+
+.lendingTabs,
+.lendingMarketGrid {
+  display: grid;
+  gap: 8px;
+}
+
+.lendingTabs {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 4px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #f8fbff;
+}
+
+.lendingTab,
+.lendingTabActive {
+  min-height: 42px;
+  border: 0;
+  border-radius: 7px;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.lendingTab {
+  color: #475569;
+  background: transparent;
+}
+
+.lendingTabActive {
+  color: #ffffff;
+  background: linear-gradient(135deg, #082c91, #1769ff);
+  box-shadow: 0 12px 24px rgba(23, 105, 255, 0.2);
+}
+
+.lendingMarketGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.lendingMarket,
+.lendingMarketActive {
+  min-height: 64px;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.lendingMarket {
+  border: 1px solid #dbe4f0;
+  color: #334155;
+  background: #f8fafc;
+}
+
+.lendingMarketActive {
+  border: 1px solid #93c5fd;
+  color: #0d3fbd;
+  background: linear-gradient(180deg, #e5f0ff, #dbeafe);
+}
+
+.lendingMarket strong,
+.lendingMarketActive strong {
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.lendingMarket span,
+.lendingMarketActive span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.lendingAmountBox {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.38fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 94px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  padding: 14px;
+  background: linear-gradient(180deg, #f8fbff, #f1f7ff);
+}
+
+.lendingAmountBox span {
+  display: grid;
+  gap: 4px;
+}
+
+.lendingAmountBox b {
+  color: #0d3fbd;
+  font-size: 24px;
+  font-weight: 950;
+}
+
+.lendingAmountBox small {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.lendingAmountBox input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #07101f;
+  font: inherit;
+  font-size: 28px;
+  font-weight: 950;
+  outline: none;
+  text-align: right;
+}
+
+.lendingPreviewGrid,
+.lendingMetricGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.lendingMetricGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.lendingUtilityRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.lendingPreviewGrid div,
+.lendingMetricGrid div,
+.lendingPositionList div {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f8fbff;
+}
+
+.lendingPreviewGrid span,
+.lendingMetricGrid span,
+.lendingPositionList span,
+.lendingHealthHero span,
+.lendingTableHead span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.lendingPreviewGrid strong,
+.lendingMetricGrid strong,
+.lendingPositionList strong {
+  color: #07101f;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.lendingHealthHero {
+  display: grid;
+  gap: 4px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 14px;
+}
+
+.lendingHealthHero strong {
+  color: #0d3fbd;
+  font-size: 42px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.lendingHealthHero small,
+.lendingPositionList small {
+  color: #475569;
+  font-weight: 800;
+}
+
+.lendingPositionList {
+  display: grid;
+  gap: 10px;
+}
+
+.lendingMarketTable {
+  width: min(860px, 100%);
+  display: grid;
+  margin: 16px auto 0;
+  padding: 12px;
+}
+
+.lendingTableHead,
+.lendingTableRow {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) repeat(4, minmax(90px, 0.8fr));
+  gap: 12px;
+  align-items: center;
+}
+
+.lendingTableHead {
+  padding: 6px 10px 12px;
+}
+
+.lendingTableRow {
+  min-height: 54px;
+  border: 0;
+  border-top: 1px solid #e2e8f0;
+  background: transparent;
+  color: #334155;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lendingTableRow strong {
+  color: #07101f;
+  font-weight: 950;
+}
+
+.lendingTableRow span {
+  font-weight: 850;
+}
+
+.lendingTableRow:hover {
+  color: #0d3fbd;
+}
+
 .verifyGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-top: 14px;
+}
+
+.tokenPairStrip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.tokenPairStrip div {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 14px;
+  background: linear-gradient(180deg, #f8fbff, #eff6ff);
+}
+
+.tokenPairStrip span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.tokenPairStrip strong {
+  color: #0d3fbd;
+  font-size: 22px;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.tokenPairStrip small {
+  color: #475569;
+  font-weight: 800;
+}
+
+.tokenPairStrip em {
+  color: #64748b;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.earnHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.earnHero div {
+  display: grid;
+  gap: 5px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 16px;
+  background: linear-gradient(180deg, #f8fbff, #eaf7ff);
+}
+
+.earnHero span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.earnHero strong {
+  color: #0d3fbd;
+  font-size: 30px;
+  font-weight: 950;
+  line-height: 1.08;
+}
+
+.earnHero small {
+  color: #475569;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
 .detailItem {
@@ -302,6 +1306,27 @@
   }
 
   .wizardGrid,
+  .dexLiquidityLayout,
+  .defiLayout,
+  .defiTokenInputRow,
+  .bridgeRouteGrid,
+  .bridgeSteps,
+  .onrampPresetGrid,
+  .dexPairSelector,
+  .dexSummaryGrid,
+  .dexTokenInput,
+  .lendingShell,
+  .lendingMarketGrid,
+  .lendingAmountBox,
+  .lendingPreviewGrid,
+  .lendingMetricGrid,
+  .lendingUtilityRow,
+  .lendingTableHead,
+  .lendingTableRow,
+  .earnHero,
+  .pairGrid,
+  .tokenBalanceGrid,
+  .tokenPairStrip,
   .verifyGrid {
     grid-template-columns: 1fr;
   }
@@ -336,8 +1361,86 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+:global(body[data-display-mode="desktop"]) .dexLiquidityLayout {
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+}
+
+:global(body[data-display-mode="desktop"]) .defiLayout {
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+}
+
+:global(body[data-display-mode="desktop"]) .defiTokenInputRow {
+  grid-template-columns: minmax(110px, 0.35fr) minmax(0, 1fr);
+}
+
+:global(body[data-display-mode="desktop"]) .bridgeRouteGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:global(body[data-display-mode="desktop"]) .bridgeSteps,
+:global(body[data-display-mode="desktop"]) .onrampPresetGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+:global(body[data-display-mode="desktop"]) .dexPairSelector {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+:global(body[data-display-mode="desktop"]) .dexTokenInput {
+  grid-template-columns: minmax(110px, 0.38fr) minmax(0, 1fr);
+}
+
+:global(body[data-display-mode="desktop"]) .dexSummaryGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:global(body[data-display-mode="desktop"]) .lendingShell {
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+}
+
+:global(body[data-display-mode="desktop"]) .lendingMarketGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+:global(body[data-display-mode="desktop"]) .lendingAmountBox {
+  grid-template-columns: minmax(110px, 0.38fr) minmax(0, 1fr);
+}
+
+:global(body[data-display-mode="desktop"]) .lendingPreviewGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+:global(body[data-display-mode="desktop"]) .lendingMetricGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:global(body[data-display-mode="desktop"]) .lendingUtilityRow {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:global(body[data-display-mode="desktop"]) .lendingTableHead,
+:global(body[data-display-mode="desktop"]) .lendingTableRow {
+  grid-template-columns: minmax(100px, 1fr) repeat(4, minmax(90px, 0.8fr));
+}
+
+:global(body[data-display-mode="desktop"]) .pairGrid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+:global(body[data-display-mode="desktop"]) .tokenBalanceGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 :global(body[data-display-mode="desktop"]) .verifyGrid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:global(body[data-display-mode="desktop"]) .tokenPairStrip {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:global(body[data-display-mode="desktop"]) .earnHero {
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
 }
 
 :global(body[data-display-mode="desktop"]) .paymentBox {
@@ -368,11 +1471,38 @@
 :global(body[data-display-mode="mobile"]) .statusText,
 :global(body[data-display-mode="mobile"]) .txLine,
 :global(body[data-display-mode="mobile"]) .sectionStack,
-:global(body[data-display-mode="mobile"]) .wizardGrid {
+:global(body[data-display-mode="mobile"]) .dexLiquidityLayout,
+:global(body[data-display-mode="mobile"]) .defiLayout,
+:global(body[data-display-mode="mobile"]) .lendingShell,
+:global(body[data-display-mode="mobile"]) .lendingMarketTable,
+:global(body[data-display-mode="mobile"]) .wizardGrid,
+:global(body[data-display-mode="mobile"]) .tokenBalanceGrid,
+:global(body[data-display-mode="mobile"]) .pairGrid {
   width: 100%;
 }
 
 :global(body[data-display-mode="mobile"]) .wizardGrid,
+:global(body[data-display-mode="mobile"]) .dexLiquidityLayout,
+:global(body[data-display-mode="mobile"]) .defiLayout,
+:global(body[data-display-mode="mobile"]) .defiTokenInputRow,
+:global(body[data-display-mode="mobile"]) .bridgeRouteGrid,
+:global(body[data-display-mode="mobile"]) .bridgeSteps,
+:global(body[data-display-mode="mobile"]) .onrampPresetGrid,
+:global(body[data-display-mode="mobile"]) .dexPairSelector,
+:global(body[data-display-mode="mobile"]) .dexSummaryGrid,
+:global(body[data-display-mode="mobile"]) .dexTokenInput,
+:global(body[data-display-mode="mobile"]) .lendingShell,
+:global(body[data-display-mode="mobile"]) .lendingMarketGrid,
+:global(body[data-display-mode="mobile"]) .lendingAmountBox,
+:global(body[data-display-mode="mobile"]) .lendingPreviewGrid,
+:global(body[data-display-mode="mobile"]) .lendingMetricGrid,
+:global(body[data-display-mode="mobile"]) .lendingUtilityRow,
+:global(body[data-display-mode="mobile"]) .lendingTableHead,
+:global(body[data-display-mode="mobile"]) .lendingTableRow,
+:global(body[data-display-mode="mobile"]) .earnHero,
+:global(body[data-display-mode="mobile"]) .pairGrid,
+:global(body[data-display-mode="mobile"]) .tokenBalanceGrid,
+:global(body[data-display-mode="mobile"]) .tokenPairStrip,
 :global(body[data-display-mode="mobile"]) .verifyGrid,
 :global(body[data-display-mode="mobile"]) .paymentBox,
 :global(body[data-display-mode="mobile"]) .qrArea {

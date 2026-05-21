@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { Address, Hash } from "viem";
 import type { WalletTokenBalance } from "@/src/lib/getBalances";
+import { getTokenIconSymbol, TokenIcon } from "@/src/components/TokenIcon";
 import { useAppWallet } from "@/src/hooks/useAppWallet";
 import { getArcExplorerTxUrl } from "@/src/lib/explorers";
 import {
@@ -74,6 +75,24 @@ const ACTIONS = [
     icon: "bridge",
   },
   {
+    href: "/gateway",
+    label: "Gateway",
+    detail: "Unified USDC balance",
+    icon: "gateway",
+  },
+  {
+    href: "/liquidity",
+    label: "LP / Vault",
+    detail: "USDC, EURC, cirBTC, BOOZZ",
+    icon: "liquidity",
+  },
+  {
+    href: "/lending",
+    label: "Lending",
+    detail: "Supply, borrow, repay",
+    icon: "lending",
+  },
+  {
     href: "/buy-usdc",
     label: "Buy USDC",
     detail: "Xendit Test Mode",
@@ -105,33 +124,6 @@ function WalletIcon() {
   );
 }
 
-function getTokenLogo(symbolOrAsset: string) {
-  const value = symbolOrAsset.toLowerCase();
-
-  if (value.includes("usdc")) {
-    return {
-      alt: "USDC",
-      src: "https://cryptologos.cc/logos/usd-coin-usdc-logo.svg?v=040",
-    };
-  }
-
-  if (value.includes("eurc") || value.includes("euroc")) {
-    return {
-      alt: "EURC",
-      src: "https://cryptologos.cc/logos/euro-coin-euroc-logo.svg?v=040",
-    };
-  }
-
-  if (value.includes("cirbtc") || value.includes("btc")) {
-    return {
-      alt: "BTC",
-      src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=040",
-    };
-  }
-
-  return null;
-}
-
 function TokenLogo({
   fallback,
   symbolOrAsset,
@@ -139,17 +131,13 @@ function TokenLogo({
   fallback: string;
   symbolOrAsset: string;
 }) {
-  const logo = getTokenLogo(symbolOrAsset);
+  const symbol = getTokenIconSymbol(symbolOrAsset);
 
-  if (!logo) {
-    return <span className={styles.tokenBadge}>{fallback}</span>;
+  if (symbol) {
+    return <TokenIcon size="md" symbol={symbol} />;
   }
 
-  return (
-    <span className={styles.tokenLogoBadge}>
-      <img alt={logo.alt} src={logo.src} />
-    </span>
-  );
+  return <span className={styles.tokenBadge}>{fallback}</span>;
 }
 
 function XLogoIcon() {
@@ -206,6 +194,40 @@ function ActionIcon({ name }: { name: ActionIconName }) {
     );
   }
 
+  if (name === "liquidity") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 17c3-5 5-5 8 0s5 5 8 0" />
+        <path d="M4 7c3 5 5 5 8 0s5-5 8 0" />
+        <path d="M12 7v10" />
+      </svg>
+    );
+  }
+
+  if (name === "gateway") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 8h16" />
+        <path d="M4 16h16" />
+        <path d="M7 5v14" />
+        <path d="M17 5v14" />
+        <path d="M9 12h6" />
+      </svg>
+    );
+  }
+
+  if (name === "lending") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 17h16" />
+        <path d="M7 17V9" />
+        <path d="M12 17V5" />
+        <path d="M17 17v-6" />
+        <path d="m8 9 4-4 4 4" />
+      </svg>
+    );
+  }
+
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M5 18v-4a7 7 0 0 1 14 0v4" />
@@ -219,6 +241,14 @@ function getActivityIconName(activity: Activity): ActionIconName | null {
   const value = `${activity.type} ${activity.asset}`.toLowerCase();
 
   if (value.includes("swap")) return "swap";
+  if (value.includes("lp") || value.includes("vault") || value.includes("liquidity")) return "liquidity";
+  if (
+    value.includes("lend") ||
+    value.includes("borrow") ||
+    value.includes("repay")
+  ) {
+    return "lending";
+  }
   if (value.includes("bridge")) return "bridge";
   if (value.includes("send") || value.includes("transfer")) return "send";
   if (
@@ -583,8 +613,20 @@ export function DashboardHome() {
             Swap
           </Link>
           <Link className={styles.navItem} href="/bridge">
-            <span className={styles.navIcon}>⌁</span>
+            <span className={styles.navIcon}>BR</span>
             Bridge
+          </Link>
+          <Link className={styles.navItem} href="/gateway">
+            <span className={styles.navIcon}>GW</span>
+            Gateway
+          </Link>
+          <Link className={styles.navItem} href="/liquidity">
+            <span className={styles.navIcon}>LP</span>
+            LP / Vault
+          </Link>
+          <Link className={styles.navItem} href="/lending">
+            <span className={styles.navIcon}>LD</span>
+            Lending
           </Link>
           <Link className={styles.navItem} href="/buy-usdc">
             <span className={styles.navIcon}>$</span>

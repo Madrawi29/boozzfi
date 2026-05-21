@@ -1,0 +1,63 @@
+.tokenIcon {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow:
+    0 8px 18px rgba(15, 79, 230, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+  font-weight: 950;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.sm {
+  width: 24px;
+  height: 24px;
+  font-size: 9px;
+}
+
+.md {
+  width: 34px;
+  height: 34px;
+  font-size: 11px;
+}
+
+.lg {
+  width: 42px;
+  height: 42px;
+  font-size: 12px;
+}
+
+.usdc,
+.eurc,
+.cirbtc,
+.boozz {
+  background: #ffffff;
+}
+
+.tokenIcon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pair {
+  display: inline-flex;
+  align-items: center;
+  min-width: 54px;
+}
+
+.pair .tokenIcon + .tokenIcon {
+  margin-left: -10px;
+}
+
+.pair .tokenIcon:last-child {
+  box-shadow:
+    0 8px 18px rgba(15, 79, 230, 0.14),
+    0 0 0 2px #ffffff;
+}

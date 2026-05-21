@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import type { Hash } from "viem";
 import { FeatureHeader } from "@/src/components/FeatureHeader";
 import styles from "@/src/components/FeaturePage.module.css";
+import { AmountPercentControls } from "@/src/components/TokenBalanceControls";
+import { TokenIcon } from "@/src/components/TokenIcon";
 import {
   MinimumTransactionNotice,
   TransactionProcessing,
@@ -11,15 +13,31 @@ import {
 import { useAppWallet } from "@/src/hooks/useAppWallet";
 import { recordActivity, updateActivityStatus } from "@/src/lib/activity";
 import { getArcExplorerTxUrl } from "@/src/lib/explorers";
-import { getBalances } from "@/src/lib/getBalances";
+import { getBalances, type WalletTokenBalance } from "@/src/lib/getBalances";
 import { waitForArcTransactionStatus } from "@/src/lib/transactions";
 import {
+  getEstimatedSwapOutput,
   getSwapErrorMessage,
   swapTokens,
   type SwapToken,
 } from "@/src/lib/swapTokens";
 
-const ARC_SWAP_TOKENS: SwapToken[] = ["USDC", "EURC", "cirBTC"];
+const ARC_SWAP_TOKENS: SwapToken[] = ["USDC", "EURC", "cirBTC", "BOOZZ"];
+const TOKEN_REFERENCE_PRICE_USD: Record<SwapToken, number> = {
+  BOOZZ: 0.3,
+  cirBTC: 100000,
+  EURC: 1,
+  USDC: 1,
+};
+const DEFAULT_SLIPPAGE_PERCENT = 0.5;
+
+function formatSwapAmount(value: number, token: SwapToken) {
+  return value.toLocaleString("en-US", {
+    maximumFractionDigits: token === "cirBTC" ? 8 : 6,
+    minimumFractionDigits: token === "cirBTC" ? 8 : 0,
+    useGrouping: false,
+  });
+}
 
 export default function SwapPage() {
   const { address, login, wallet, switchToArc } = useAppWallet();
@@ -29,17 +47,46 @@ export default function SwapPage() {
   const [status, setStatus] = useState("");
   const [txHash, setTxHash] = useState("");
   const [loading, setLoading] = useState(false);
-  const [usdcBalance, setUsdcBalance] = useState(0);
+  const [tokenBalances, setTokenBalances] = useState<WalletTokenBalance[]>([]);
+  const estimatedOutput = getEstimatedSwapOutput(tokenIn, tokenOut, amountIn);
+  const tokenInBalance =
+    tokenBalances.find((token) => token.symbol === tokenIn)?.balance ?? 0;
+  const numericAmountIn = Number(amountIn);
+  const referenceOutput =
+    Number.isFinite(numericAmountIn) && numericAmountIn > 0 && tokenIn !== tokenOut
+      ? (numericAmountIn * TOKEN_REFERENCE_PRICE_USD[tokenIn]) /
+        TOKEN_REFERENCE_PRICE_USD[tokenOut]
+      : 0;
+  const displayOutput =
+    estimatedOutput ||
+    (referenceOutput > 0 ? formatSwapAmount(referenceOutput, tokenOut) : "0");
+  const minimumReceived =
+    referenceOutput > 0
+      ? formatSwapAmount(
+          referenceOutput * (1 - DEFAULT_SLIPPAGE_PERCENT / 100),
+          tokenOut,
+        )
+      : "0";
+  const routeName =
+    tokenIn === "USDC" && tokenOut === "BOOZZ"
+      ? "BoozzFi Treasury"
+      : tokenIn === "BOOZZ" || tokenOut === "BOOZZ"
+        ? "Custom route unavailable"
+        : "Circle App Kit";
 
-  useEffect(() => {
+  async function refreshBalances() {
     if (!address) {
-      setUsdcBalance(0);
+      setTokenBalances([]);
       return;
     }
 
     getBalances(address)
-      .then((balances) => setUsdcBalance(balances.usdc))
-      .catch(() => setUsdcBalance(0));
+      .then((balances) => setTokenBalances(balances.tokens))
+      .catch(() => setTokenBalances([]));
+  }
+
+  useEffect(() => {
+    refreshBalances();
   }, [address]);
 
   const handleSwap = async () => {
@@ -78,8 +125,7 @@ export default function SwapPage() {
       );
       await updateActivityStatus(result.txHash, activityStatus);
       if (address) {
-        const balances = await getBalances(address);
-        setUsdcBalance(balances.usdc);
+        await refreshBalances();
       }
       setStatus(
         activityStatus === "Success"
@@ -112,52 +158,73 @@ export default function SwapPage() {
       <section className={styles.panel}>
       <FeatureHeader title="Swap Arc Testnet" />
 
-      <p className={styles.balanceLine}>
-        USDC Balance{" "}
-        <b className={styles.balanceValue}>{usdcBalance.toFixed(6)} USDC</b>
-      </p>
+      <div className={styles.defiLayout}>
+        <section className={styles.defiActionCard}>
+          <MinimumTransactionNotice />
 
-      <div className={styles.formGrid}>
-        <MinimumTransactionNotice />
+          <div className={styles.swapTokenBox}>
+            <div className={styles.defiTokenHeader}>
+              <span>From</span>
+              <strong>Balance {formatSwapAmount(tokenInBalance, tokenIn)} {tokenIn}</strong>
+            </div>
+            <div className={styles.defiTokenInputRow}>
+              <div className={styles.defiAssetSelect}>
+                <TokenIcon symbol={tokenIn} />
+                <select
+                  value={tokenIn}
+                  onChange={(event) => setTokenIn(event.target.value as SwapToken)}
+                >
+                  {ARC_SWAP_TOKENS.map((token) => (
+                    <option key={token} value={token}>
+                      {token}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <input
+                inputMode="decimal"
+                placeholder="0.0"
+                value={amountIn}
+                onChange={(event) => setAmountIn(event.target.value)}
+              />
+            </div>
+          </div>
 
-        <select
-          className={styles.field}
-          value={tokenIn}
-          onChange={(event) => setTokenIn(event.target.value as SwapToken)}
-        >
-          {ARC_SWAP_TOKENS.map((token) => (
-            <option key={token} value={token}>
-              From: {token}
-            </option>
-          ))}
-        </select>
-
-        <div className={styles.buttonRow}>
-          <button className={styles.secondaryButton} onClick={flipTokens}>
+          <button className={styles.swapFlipButton} onClick={flipTokens} type="button">
             Flip
           </button>
-        </div>
 
-        <select
-          className={styles.field}
-          value={tokenOut}
-          onChange={(event) => setTokenOut(event.target.value as SwapToken)}
-        >
-          {ARC_SWAP_TOKENS.map((token) => (
-            <option key={token} value={token}>
-              To: {token}
-            </option>
-          ))}
-        </select>
+          <div className={styles.swapTokenBox}>
+            <div className={styles.defiTokenHeader}>
+              <span>To</span>
+              <strong>Estimated receive</strong>
+            </div>
+            <div className={styles.defiTokenInputRow}>
+              <div className={styles.defiAssetSelect}>
+                <TokenIcon symbol={tokenOut} />
+                <select
+                  value={tokenOut}
+                  onChange={(event) => setTokenOut(event.target.value as SwapToken)}
+                >
+                  {ARC_SWAP_TOKENS.map((token) => (
+                    <option key={token} value={token}>
+                      {token}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <output>{displayOutput}</output>
+            </div>
+          </div>
 
-        <input
-          className={styles.field}
-          placeholder={`Amount ${tokenIn}`}
-          value={amountIn}
-          onChange={(event) => setAmountIn(event.target.value)}
-        />
+          <AmountPercentControls
+            amount={amountIn}
+            balance={tokenInBalance}
+            disabled={loading}
+            onSelectAmount={setAmountIn}
+            symbol={tokenIn}
+          />
 
-        <div className={styles.buttonRow}>
           <button
             className={styles.primaryButton}
             onClick={handleSwap}
@@ -165,12 +232,51 @@ export default function SwapPage() {
           >
             {loading ? "Swapping..." : `Swap ${tokenIn} to ${tokenOut}`}
           </button>
-        </div>
 
-        <TransactionProcessing
-          active={loading}
-          label="Waiting for the swap transaction to process..."
-        />
+          <TransactionProcessing
+            active={loading}
+            label="Waiting for the swap transaction to process..."
+          />
+        </section>
+
+        <aside className={styles.defiQuotePanel}>
+          <div className={styles.defiQuoteHero}>
+            <span>Swap Quote</span>
+            <strong className={styles.tokenHeroLine}>
+              <TokenIcon size="sm" symbol={tokenOut} />
+              {displayOutput} {tokenOut}
+            </strong>
+            <small>{routeName}</small>
+          </div>
+          <div className={styles.defiInfoList}>
+            <div>
+              <span>Rate</span>
+              <strong>
+                1 {tokenIn} ={" "}
+                {tokenIn === tokenOut
+                  ? "0"
+                  : formatSwapAmount(
+                      TOKEN_REFERENCE_PRICE_USD[tokenIn] /
+                        TOKEN_REFERENCE_PRICE_USD[tokenOut],
+                      tokenOut,
+                    )}{" "}
+                {tokenOut}
+              </strong>
+            </div>
+            <div>
+              <span>Minimum received</span>
+              <strong>{minimumReceived} {tokenOut}</strong>
+            </div>
+            <div>
+              <span>Slippage</span>
+              <strong>{DEFAULT_SLIPPAGE_PERCENT}%</strong>
+            </div>
+            <div>
+              <span>Price impact</span>
+              <strong>{referenceOutput > 0 ? "<0.01%" : "--"}</strong>
+            </div>
+          </div>
+        </aside>
       </div>
 
       {status && <p className={styles.statusText}>{status}</p>}

@@ -1,32 +1,14 @@
 import type { ConnectedWallet } from "@privy-io/react-auth";
-import {
-  createPublicClient,
-  createWalletClient,
-  custom,
-  isAddress,
-  parseUnits,
-  type Address,
-} from "viem";
+import { isAddress, type Address } from "viem";
 import { arcTestnetChain } from "@/src/lib/arc/viem";
-
-const ERC20_ABI = [
-  {
-    name: "transfer",
-    type: "function",
-    stateMutability: "nonpayable",
-    inputs: [
-      { name: "to", type: "address" },
-      { name: "amount", type: "uint256" },
-    ],
-    outputs: [{ type: "bool" }],
-  },
-] as const;
+import { createCircleAppKit } from "@/src/lib/circleAppKit";
+import { getPrivyAdapter } from "@/src/lib/privyAdapter";
 
 export async function sendToken(
   token: Address,
   to: Address,
   amount: string,
-  decimals: number,
+  _decimals: number,
   wallet: ConnectedWallet,
 ) {
   if (!isAddress(token)) throw new Error("Invalid token address");
@@ -34,26 +16,21 @@ export async function sendToken(
   if (!amount || Number(amount) <= 0) throw new Error("Enter a valid amount");
 
   await wallet.switchChain(arcTestnetChain.id);
-  const provider = await wallet.getEthereumProvider();
-  const walletClient = createWalletClient({
-    chain: arcTestnetChain,
-    transport: custom(provider),
-  });
-  const publicClient = createPublicClient({
-    chain: arcTestnetChain,
-    transport: custom(provider),
-  });
-
-  const [account] = await walletClient.getAddresses();
-  const value = parseUnits(amount, decimals);
-
-  const { request } = await publicClient.simulateContract({
-    address: token,
-    abi: ERC20_ABI,
-    functionName: "transfer",
-    args: [to, value],
-    account,
+  const adapter = await getPrivyAdapter(wallet);
+  const kit = createCircleAppKit();
+  const result = await kit.send({
+    amount,
+    from: {
+      adapter,
+      chain: "Arc_Testnet",
+    },
+    to,
+    token,
   });
 
-  return walletClient.writeContract(request);
+  if (!result.txHash) {
+    throw new Error("App Kit send did not return a transaction hash.");
+  }
+
+  return result.txHash as `0x${string}`;
 }

@@ -1,4 +1,4 @@
-import { createPublicClient, http, formatUnits, type Address } from "viem";
+import { createPublicClient, http, formatUnits, isAddress, type Address } from "viem";
 import type { BridgeChain } from "./bridgeUsdc";
 import { PHAROS_TESTNET } from "./pharos";
 
@@ -51,8 +51,11 @@ const ERC20_ABI = [
 ] as const;
 
 const RPC_TIMEOUT_MS = 5000;
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-const ARC_WALLET_TOKENS: Array<Omit<WalletTokenBalance, "balance">> = [
+function getArcWalletTokens(): Array<Omit<WalletTokenBalance, "balance">> {
+  const boozzAddress = process.env.NEXT_PUBLIC_BOOZZ_TOKEN_ADDRESS;
+  const tokens: Array<Omit<WalletTokenBalance, "balance">> = [
   {
     address: "0x3600000000000000000000000000000000000000",
     decimals: 6,
@@ -71,7 +74,16 @@ const ARC_WALLET_TOKENS: Array<Omit<WalletTokenBalance, "balance">> = [
     name: "Circle Bitcoin",
     symbol: "cirBTC",
   },
-];
+  {
+    address: boozzAddress && isAddress(boozzAddress) ? boozzAddress : ZERO_ADDRESS,
+    decimals: 18,
+    name: "BOOZZ Token",
+    symbol: "BOOZZ",
+  },
+  ];
+
+  return tokens;
+}
 
 export async function getUsdcBalance(
   address: Address,
@@ -146,8 +158,15 @@ export async function getArcErc20Balance(
 
 export async function getArcWalletTokenBalances(address: Address) {
   const balances = await Promise.all(
-    ARC_WALLET_TOKENS.map(async (token) => {
+    getArcWalletTokens().map(async (token) => {
       try {
+        if (token.address === ZERO_ADDRESS) {
+          return {
+            ...token,
+            balance: 0,
+          };
+        }
+
         return {
           ...token,
           balance: await getArcErc20Balance(
@@ -169,9 +188,15 @@ export async function getArcWalletTokenBalances(address: Address) {
 }
 
 export async function getBalances(address: Address) {
-  const usdc = await getUsdcBalance(address, "Arc_Testnet");
+  const arcTokens = await getArcWalletTokenBalances(address);
+  const getTokenBalance = (symbol: string) =>
+    arcTokens.find((token) => token.symbol === symbol)?.balance ?? 0;
 
   return {
-    usdc,
+    boozz: getTokenBalance("BOOZZ"),
+    cirBTC: getTokenBalance("cirBTC"),
+    eurc: getTokenBalance("EURC"),
+    tokens: arcTokens,
+    usdc: getTokenBalance("USDC"),
   };
 }

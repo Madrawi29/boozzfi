@@ -1,6 +1,12 @@
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/src/db";
 import { ensureDatabase } from "@/src/lib/migrate";
+import {
+  insertRow,
+  isSupabaseConfigured,
+  selectRows,
+  updateRows,
+} from "@/src/server/supabase/rest";
 import type { PaymentRecord, PaymentStatus } from "@/src/types/payment";
 
 type PaymentRecordPatch = Partial<
@@ -48,11 +54,29 @@ function deserializePayment(
   };
 }
 
+function deserializeSupabasePayment(record: Record<string, unknown>): PaymentRecord {
+  return {
+    referenceId: String(record.referenceId),
+    invoiceId: record.invoiceId ? String(record.invoiceId) : undefined,
+    invoiceUrl: record.invoiceUrl ? String(record.invoiceUrl) : undefined,
+    userWallet: String(record.userWallet),
+    idrAmount: Number(record.idrAmount),
+    usdcAmount: String(record.usdcAmount),
+    status: String(record.status) as PaymentStatus,
+    xenditStatus: record.xenditStatus ? String(record.xenditStatus) : undefined,
+    circleTransactionId: record.circleTransactionId
+      ? String(record.circleTransactionId)
+      : undefined,
+    txHash: record.txHash ? String(record.txHash) : undefined,
+    errorMessage: record.errorMessage ? String(record.errorMessage) : undefined,
+    createdAt: new Date(String(record.createdAt)).toISOString(),
+    updatedAt: new Date(String(record.updatedAt)).toISOString(),
+  };
+}
+
 export async function createPaymentRecord(
   input: Omit<PaymentRecord, "createdAt" | "updatedAt">,
 ) {
-  await ensureDatabase();
-
   const timestamp = new Date().toISOString();
   const record: PaymentRecord = {
     ...input,
@@ -60,12 +84,35 @@ export async function createPaymentRecord(
     updatedAt: timestamp,
   };
 
+  if (isSupabaseConfigured()) {
+    try {
+      const row = await insertRow<Record<string, unknown>>("payment_records", record);
+      return row ? deserializeSupabasePayment(row) : record;
+    } catch (error) {
+      console.warn("Supabase payment insert failed; falling back to local database.", error);
+    }
+  }
+
+  await ensureDatabase();
   await db.insert(schema.paymentRecords).values(serializePayment(record));
   return record;
 }
 
 export async function findPaymentRecord(referenceId: string | undefined | null) {
   if (!referenceId) return null;
+
+  if (isSupabaseConfigured()) {
+    try {
+      const rows = await selectRows<Record<string, unknown>>("payment_records", {
+        filters: { referenceId },
+        limit: 1,
+      });
+      return rows[0] ? deserializeSupabasePayment(rows[0]) : null;
+    } catch (error) {
+      console.warn("Supabase payment lookup failed; falling back to local database.", error);
+    }
+  }
+
   await ensureDatabase();
 
   const [record] = await db
@@ -81,6 +128,19 @@ export async function findPaymentRecordByInvoiceId(
   invoiceId: string | undefined | null,
 ) {
   if (!invoiceId) return null;
+
+  if (isSupabaseConfigured()) {
+    try {
+      const rows = await selectRows<Record<string, unknown>>("payment_records", {
+        filters: { invoiceId },
+        limit: 1,
+      });
+      return rows[0] ? deserializeSupabasePayment(rows[0]) : null;
+    } catch (error) {
+      console.warn("Supabase payment invoice lookup failed; falling back to local database.", error);
+    }
+  }
+
   await ensureDatabase();
 
   const [record] = await db
@@ -96,6 +156,22 @@ export async function updatePaymentRecord(
   referenceId: string,
   patch: PaymentRecordPatch,
 ) {
+  if (isSupabaseConfigured()) {
+    try {
+      const rows = await updateRows<Record<string, unknown>>(
+        "payment_records",
+        { referenceId },
+        {
+          ...patch,
+          updatedAt: now().toISOString(),
+        },
+      );
+      return rows[0] ? deserializeSupabasePayment(rows[0]) : null;
+    } catch (error) {
+      console.warn("Supabase payment update failed; falling back to local database.", error);
+    }
+  }
+
   await ensureDatabase();
 
   const existing = await findPaymentRecord(referenceId);

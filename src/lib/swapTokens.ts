@@ -1,15 +1,39 @@
 import type { ConnectedWallet } from "@privy-io/react-auth";
-import type { Address } from "viem";
+import {
+  createPublicClient,
+  createWalletClient,
+  custom,
+  parseUnits,
+  type Address,
+  type Hash,
+} from "viem";
 import {
   BROWSER_SWAP_PROXY_KIT_KEY,
   withCircleStablecoinProxy,
 } from "@/src/lib/circleStablecoinProxy";
 import { createCircleAppKit } from "./circleAppKit";
+import { arcTestnetChain } from "./arc/viem";
 import { getPrivyAdapter } from "./privyAdapter";
 
-export type SwapToken = "USDC" | "EURC" | "cirBTC";
+export type SwapToken = "USDC" | "EURC" | "cirBTC" | "BOOZZ";
+
 const ARC_SWAP_CHAIN = "Arc_Testnet";
-const ARC_SWAP_DOCS_TOKENS = "USDC, EURC, and cirBTC";
+const ARC_SWAP_DOCS_TOKENS = "USDC, EURC, cirBTC, and BOOZZ";
+const ARC_USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
+const BOOZZ_USDC_REFERENCE_PRICE = 0.3;
+
+const ERC20_TRANSFER_ABI = [
+  {
+    name: "transfer",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "to", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [{ type: "bool" }],
+  },
+] as const;
 
 export class SwapRouteUnavailableError extends Error {
   constructor(
@@ -66,34 +90,118 @@ export function getSwapErrorMessage(
   tokenOut: SwapToken,
 ) {
   if (error instanceof SwapRouteUnavailableError) {
-    return `${error.message} Check that the server KIT_KEY is a Circle Kit Key with Arc Testnet Swap access, then retry with a funded Arc Testnet wallet.`;
+    return `${error.message} Pair custom BOOZZ currently supports direct USDC to BOOZZ through the BoozzFi treasury swap.`;
   }
 
   if (isUnsupportedSwapRouteError(error)) {
-    return `Arc docs list ${ARC_SWAP_DOCS_TOKENS} as swap tokens on ${ARC_SWAP_CHAIN}, but Circle service returned no route for ${tokenIn} to ${tokenOut}. Check that the server KIT_KEY is a Circle Kit Key with Arc Testnet Swap access, then retry with a funded Arc Testnet wallet.`;
+    return `Arc docs list ${ARC_SWAP_DOCS_TOKENS} as swap tokens on ${ARC_SWAP_CHAIN}, but Circle service returned no route for ${tokenIn} to ${tokenOut}. Pair custom BOOZZ currently supports direct USDC to BOOZZ through the BoozzFi treasury swap.`;
   }
 
   return error instanceof Error ? error.message : "Swap failed.";
+}
+
+export function getEstimatedSwapOutput(
+  tokenIn: SwapToken,
+  tokenOut: SwapToken,
+  amountIn: string,
+) {
+  const amount = Number(amountIn);
+  if (!Number.isFinite(amount) || amount <= 0) return "";
+
+  if (tokenIn === "USDC" && tokenOut === "BOOZZ") {
+    return (amount / BOOZZ_USDC_REFERENCE_PRICE).toLocaleString("en-US", {
+      maximumFractionDigits: 6,
+      minimumFractionDigits: 0,
+      useGrouping: false,
+    });
+  }
+
+  return "";
+}
+
+async function swapUsdcToBoozz(amountIn: string, wallet: ConnectedWallet) {
+  const provider = await wallet.getEthereumProvider();
+  const walletClient = createWalletClient({
+    chain: arcTestnetChain,
+    transport: custom(provider),
+  });
+  const publicClient = createPublicClient({
+    chain: arcTestnetChain,
+    transport: custom(provider),
+  });
+  const [account] = await walletClient.getAddresses();
+  const amount = parseUnits(amountIn, 6);
+
+  if (amount <= 0n) {
+    throw new Error("Enter a valid USDC amount.");
+  }
+
+  const treasuryAddress = (process.env.NEXT_PUBLIC_BOOZZ_TREASURY_ADDRESS ||
+    "0x32c6336489F0bd3f5C17Bb56a157b71DdA99De78") as Address;
+
+  const usdcTxHash = await walletClient.writeContract({
+    account,
+    address: ARC_USDC_ADDRESS,
+    abi: ERC20_TRANSFER_ABI,
+    functionName: "transfer",
+    args: [treasuryAddress, amount],
+  });
+
+  await publicClient.waitForTransactionReceipt({ hash: usdcTxHash });
+
+  const response = await fetch("/api/swap/boozz", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      amountIn,
+      recipient: wallet.address,
+      usdcTxHash,
+    }),
+  });
+
+  const payload = (await response.json()) as {
+    error?: string;
+    message?: string;
+    txHash?: Hash;
+  };
+
+  if (!response.ok || !payload.txHash) {
+    throw new Error(payload.message || payload.error || "BOOZZ swap failed.");
+  }
+
+  return {
+    paymentTxHash: usdcTxHash,
+    txHash: payload.txHash,
+  };
 }
 
 export async function swapTokens(
   tokenIn: SwapToken,
   tokenOut: SwapToken,
   amountIn: string,
-  wallet: ConnectedWallet
+  wallet: ConnectedWallet,
 ) {
   if (!wallet) throw new Error("Privy wallet not found");
+
+  if (tokenIn === "USDC" && tokenOut === "BOOZZ") {
+    return swapUsdcToBoozz(amountIn, wallet);
+  }
+
+  if (tokenIn === "BOOZZ" || tokenOut === "BOOZZ") {
+    throw new SwapRouteUnavailableError(tokenIn, tokenOut);
+  }
 
   const adapter = await getPrivyAdapter(wallet);
   const kit = createCircleAppKit();
 
   try {
-    return await withCircleStablecoinProxy(() => {
+    const result = await withCircleStablecoinProxy(() => {
       return kit.swap({
         from: {
           adapter,
           chain: ARC_SWAP_CHAIN,
-          address: wallet.address as Address,
         },
         tokenIn,
         tokenOut,
@@ -103,6 +211,10 @@ export async function swapTokens(
         },
       });
     });
+
+    return {
+      txHash: result.txHash as Hash,
+    };
   } catch (error) {
     if (isUnsupportedSwapRouteError(error)) {
       throw new SwapRouteUnavailableError(tokenIn, tokenOut);
