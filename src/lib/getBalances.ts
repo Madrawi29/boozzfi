@@ -52,9 +52,15 @@ const ERC20_ABI = [
 
 const RPC_TIMEOUT_MS = 5000;
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const VERIFIED_BOOZZ_TOKEN_ADDRESS =
+  "0xd6b443e56293ce991b17086acf5ec5545e7e1272";
 
 function getArcWalletTokens(): Array<Omit<WalletTokenBalance, "balance">> {
-  const boozzAddress = process.env.NEXT_PUBLIC_BOOZZ_TOKEN_ADDRESS;
+  const boozzAddress = process.env.NEXT_PUBLIC_BOOZZ_TOKEN_ADDRESS?.trim();
+  const boozzTokenAddress =
+    boozzAddress && isAddress(boozzAddress)
+      ? boozzAddress
+      : VERIFIED_BOOZZ_TOKEN_ADDRESS;
   const tokens: Array<Omit<WalletTokenBalance, "balance">> = [
   {
     address: "0x3600000000000000000000000000000000000000",
@@ -75,7 +81,7 @@ function getArcWalletTokens(): Array<Omit<WalletTokenBalance, "balance">> {
     symbol: "cirBTC",
   },
   {
-    address: boozzAddress && isAddress(boozzAddress) ? boozzAddress : ZERO_ADDRESS,
+    address: boozzTokenAddress,
     decimals: 18,
     name: "BOOZZ Token",
     symbol: "BOOZZ",
