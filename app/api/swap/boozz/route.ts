@@ -19,6 +19,8 @@ export const dynamic = "force-dynamic";
 
 const ARC_USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
 const TREASURY_ADDRESS = "0x32c6336489F0bd3f5C17Bb56a157b71DdA99De78";
+const VERIFIED_BOOZZ_TOKEN_ADDRESS =
+  "0xd6b443e56293ce991b17086acf5ec5545e7e1272";
 
 const BOOZZ_ABI = parseAbi([
   "function transfer(address to, uint256 amount) external returns (bool)",
@@ -35,8 +37,9 @@ function getBoozzAmount(usdcAmount: bigint) {
 }
 
 function normalizePrivateKey(value: string | undefined) {
-  if (!value) return "";
-  return value.startsWith("0x") ? value : `0x${value}`;
+  const privateKey = value?.trim();
+  if (!privateKey) return "";
+  return privateKey.startsWith("0x") ? privateKey : `0x${privateKey}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -49,7 +52,12 @@ export async function POST(request: NextRequest) {
     const amountIn = body.amountIn?.trim() ?? "";
     const recipient = body.recipient?.trim() ?? "";
     const usdcTxHash = body.usdcTxHash?.trim() ?? "";
-    const boozzTokenAddress = process.env.NEXT_PUBLIC_BOOZZ_TOKEN_ADDRESS;
+    const configuredBoozzTokenAddress =
+      process.env.NEXT_PUBLIC_BOOZZ_TOKEN_ADDRESS?.trim();
+    const boozzTokenAddress =
+      configuredBoozzTokenAddress && isAddress(configuredBoozzTokenAddress)
+        ? configuredBoozzTokenAddress
+        : VERIFIED_BOOZZ_TOKEN_ADDRESS;
     const privateKey = normalizePrivateKey(process.env.DEPLOYER_PRIVATE_KEY);
 
     if (!amountIn || Number(amountIn) <= 0) {
@@ -70,7 +78,7 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
-    if (!boozzTokenAddress || !isAddress(boozzTokenAddress)) {
+    if (!isAddress(boozzTokenAddress)) {
       return NextResponse.json(
         { error: "server_config", message: "BOOZZ token address is not configured." },
         { status: 500 },
